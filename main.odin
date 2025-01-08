@@ -44,7 +44,7 @@ main :: proc() {
 
         transformedVertices := ApplyMatrix(&cube, mvpMatrix)
 
-        DrawWireframe(transformedVertices, cube.edges)
+        DrawWireframe(transformedVertices, cube.triangles)
 
         rl.EndDrawing()
     }
@@ -60,11 +60,15 @@ ApplyMatrix :: proc(mesh: ^Mesh, mat: Matrix4x4) -> []rl.Vector3 {
     return transformedVertices
 }
 
-DrawWireframe :: proc(vertices: []rl.Vector3, edges: [][2]int) {
-    for edge in edges {
-        start := ProjectToScreen(vertices[edge[0]])
-        end := ProjectToScreen(vertices[edge[1]])
-        rl.DrawLineV(start, end, rl.GREEN)
+DrawWireframe :: proc(vertices: []rl.Vector3, triangles: [][3]int) {
+    for tri in triangles {
+        p1 := ProjectToScreen(vertices[tri[0]])
+        p2 := ProjectToScreen(vertices[tri[1]])
+        p3 := ProjectToScreen(vertices[tri[2]])
+
+        rl.DrawLineV(p1, p2, rl.GREEN)
+        rl.DrawLineV(p2, p3, rl.GREEN)
+        rl.DrawLineV(p3, p1, rl.GREEN)
     }
 }
 

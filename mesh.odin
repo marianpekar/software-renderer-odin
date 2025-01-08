@@ -4,7 +4,8 @@ import rl "vendor:raylib"
 
 Mesh :: struct {
     vertices: []rl.Vector3,
-    edges: []([2]int)
+    edges: []([2]int),
+    triangles: []([3]int)
 }
 
 MakeCube :: proc() -> Mesh {
@@ -32,8 +33,35 @@ MakeCube :: proc() -> Mesh {
     edges[10] = [2]int{2, 6}
     edges[11] = [2]int{3, 7}
 
+    triangles := make([][3]int, 12)
+
+    // Front
+    triangles[0] = [3]int{0, 1, 2}
+    triangles[1] = [3]int{0, 2, 3}
+
+    // Back
+    triangles[2] = [3]int{4, 5, 6}
+    triangles[3] = [3]int{4, 6, 7}
+
+    // Left
+    triangles[4] = [3]int{0, 4, 7}
+    triangles[5] = [3]int{0, 7, 3}
+
+    // Right
+    triangles[6] = [3]int{1, 5, 6}
+    triangles[7] = [3]int{1, 6, 2}
+
+    // Top
+    triangles[8] = [3]int{3, 2, 6}
+    triangles[9] = [3]int{3, 6, 7}
+
+    // Bottom
+    triangles[10] = [3]int{0, 1, 5}
+    triangles[11] = [3]int{0, 5, 4}
+
     return Mesh{
         vertices = vertices,
-        edges = edges
+        edges = edges,
+        triangles = triangles
     }
 }
