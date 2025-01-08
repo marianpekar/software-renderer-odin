@@ -46,8 +46,8 @@ main :: proc() {
 
         transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
-        DrawFlat(&transformedVertices, cube.triangles, rl.GREEN)
-        DrawWireframe(&transformedVertices, cube.triangles, rl.RED)
+        DrawFlat(&transformedVertices, &cube.triangles, rl.GREEN)
+        DrawWireframe(&transformedVertices, &cube.triangles, rl.RED)
 
         rl.EndDrawing()
     }
