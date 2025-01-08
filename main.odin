@@ -26,26 +26,28 @@ main :: proc() {
         rl.ClearBackground(rl.BLACK)
 
         rotationAngle += 0.01
-        //translationMatrix := MakeTranslationMatrix(math.cos_f32(f32(rl.GetTime())) * 5.0, math.sin_f32(f32(rl.GetTime())) * 5.0, 0.0)
-        translationMatrix := MakeTranslationMatrix(0.0, 0.0, 0.0)
+        translationMatrix := MakeTranslationMatrix(math.cos_f32(f32(rl.GetTime())), math.sin_f32(f32(rl.GetTime())), 0.0)
+        //translationMatrix := MakeTranslationMatrix(0.0, 0.0, 0.0)
 
         rotationX := MakeRotationMatrixX(rotationAngle)
         rotationY := MakeRotationMatrixY(rotationAngle)
         rotationZ := MakeRotationMatrixZ(rotationAngle)
 
-        scale := math.sin_f32(f32(rl.GetTime())) + 3
+        scale := math.sin_f32(f32(rl.GetTime())) + 2
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
 
-        modelMatrix := Mat4Mul(Mat4Mul(rotationX, rotationY), rotationZ)
-        modelMatrix = Mat4Mul(translationMatrix, modelMatrix)
-        modelMatrix = Mat4Mul(scaleMatrix, modelMatrix)
+        modelMatrix := Mat4Mul(&rotationX, &rotationY)
+        modelMatrix = Mat4Mul(&modelMatrix, &rotationZ)
+        modelMatrix = Mat4Mul(&translationMatrix, &modelMatrix)
+        modelMatrix = Mat4Mul(&scaleMatrix, &modelMatrix)
 
-        mvpMatrix := Mat4Mul(Mat4Mul(projectionMatrix, viewMatrix), modelMatrix)
+        vpMatrix := Mat4Mul(&projectionMatrix, &viewMatrix)
+        mvpMatrix := Mat4Mul(&vpMatrix, &modelMatrix)
 
-        transformedVertices := TransformVertices(&cube.vertices, mvpMatrix)
+        transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
-        DrawFlat(transformedVertices, cube.triangles, rl.GREEN)
-        DrawWireframe(transformedVertices, cube.triangles, rl.RED)
+        DrawFlat(&transformedVertices, cube.triangles, rl.GREEN)
+        DrawWireframe(&transformedVertices, cube.triangles, rl.RED)
 
         rl.EndDrawing()
     }
@@ -53,7 +55,7 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: Matrix4x4) -> []rl.Vector3 {
+TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: ^Matrix4x4) -> []rl.Vector3 {
     transformedVertices := make([]rl.Vector3, len(vertices))
     for i in 0..<len(vertices) {
         transformedVertices[i] = Mat4MulVec3(mat, vertices[i])

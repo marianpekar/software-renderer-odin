@@ -3,7 +3,7 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawFlat :: proc(vertices: []rl.Vector3, triangles: [][3]int, color: rl.Color) {
+DrawFlat :: proc(vertices: ^[]rl.Vector3, triangles: [][3]int, color: rl.Color) {
     for tri in triangles {
         v1 := ProjectToScreen(&vertices[tri[0]])
         v2 := ProjectToScreen(&vertices[tri[1]])
@@ -81,7 +81,7 @@ DrawFilledTriangle :: proc(
     }
 }
 
-DrawWireframe :: proc(vertices: []rl.Vector3, triangles: [][3]int, color: rl.Color) {
+DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: [][3]int, color: rl.Color) {
     for tri in triangles {
         p1 := ProjectToScreen(&vertices[tri[0]])
         p2 := ProjectToScreen(&vertices[tri[1]])

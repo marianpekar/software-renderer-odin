@@ -7,7 +7,7 @@ Matrix4x4 :: struct {
     m: [4][4]f32
 }
 
-Mat4MulVec3 :: proc(mat: Matrix4x4, vec: rl.Vector3) -> rl.Vector3 {
+Mat4MulVec3 :: proc(mat: ^Matrix4x4, vec: rl.Vector3) -> rl.Vector3 {
     x := mat.m[0][0]*vec.x + mat.m[1][0]*vec.y + mat.m[2][0]*vec.z + mat.m[3][0]
     y := mat.m[0][1]*vec.x + mat.m[1][1]*vec.y + mat.m[2][1]*vec.z + mat.m[3][1]
     z := mat.m[0][2]*vec.x + mat.m[1][2]*vec.y + mat.m[2][2]*vec.z + mat.m[3][2]
@@ -20,7 +20,7 @@ Mat4MulVec3 :: proc(mat: Matrix4x4, vec: rl.Vector3) -> rl.Vector3 {
 }
 
 
-Mat4Mul :: proc(a: Matrix4x4, b: Matrix4x4) -> Matrix4x4 {
+Mat4Mul :: proc(a: ^Matrix4x4, b: ^Matrix4x4) -> Matrix4x4 {
     result: Matrix4x4
     for i in 0..<4 {
         for j in 0..<4 {
