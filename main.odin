@@ -42,9 +42,9 @@ main :: proc() {
 
         mvpMatrix := Mat4Mul(Mat4Mul(projectionMatrix, viewMatrix), modelMatrix)
 
-        transformedVertices := ApplyMatrix(&cube, mvpMatrix)
+        transformedVertices := TransformVertices(&cube.vertices, mvpMatrix)
 
-        DrawWireframe(transformedVertices, cube.triangles)
+        DrawWireframe(transformedVertices, cube.triangles, rl.GREEN)
 
         rl.EndDrawing()
     }
@@ -52,34 +52,12 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-ApplyMatrix :: proc(mesh: ^Mesh, mat: Matrix4x4) -> []rl.Vector3 {
-    transformedVertices := make([]rl.Vector3, len(mesh.vertices))
-    for i in 0..<len(mesh.vertices) {
-        transformedVertices[i] = Mat4MulVec3(mat, mesh.vertices[i])
+TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: Matrix4x4) -> []rl.Vector3 {
+    transformedVertices := make([]rl.Vector3, len(vertices))
+    for i in 0..<len(vertices) {
+        transformedVertices[i] = Mat4MulVec3(mat, vertices[i])
     }
     return transformedVertices
-}
-
-DrawWireframe :: proc(vertices: []rl.Vector3, triangles: [][3]int) {
-    for tri in triangles {
-        p1 := ProjectToScreen(vertices[tri[0]])
-        p2 := ProjectToScreen(vertices[tri[1]])
-        p3 := ProjectToScreen(vertices[tri[2]])
-
-        rl.DrawLineV(p1, p2, rl.GREEN)
-        rl.DrawLineV(p2, p3, rl.GREEN)
-        rl.DrawLineV(p3, p1, rl.GREEN)
-    }
-}
-
-ProjectToScreen :: proc(point: rl.Vector3) -> rl.Vector2 {
-    projectedX := point.x / point.z
-    projectedY := point.y / point.z
-
-    screenX := projectedX * SCREEN_WIDTH / 2 + SCREEN_WIDTH / 2
-    screenY := -projectedY * SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 2
-
-    return rl.Vector2{screenX, screenY}
 }
 
 HandleInputs :: proc(camera: ^Camera) {
