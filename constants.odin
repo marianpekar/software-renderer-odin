@@ -1,0 +1,7 @@
+package main
+
+SCREEN_WIDTH :: 800
+SCREEN_HEIGHT :: 600
+FOV :: 90
+NEAR_PLANE :: 0.01 
+FAR_PLANE :: 100
