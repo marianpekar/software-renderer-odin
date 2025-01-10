@@ -13,11 +13,16 @@ main :: proc() {
     camera.position = rl.Vector3{0.0, 0.0, -10.0}
     camera.target = rl.Vector3{0.0, 0.0, 0.0}
 
+    light := rl.Vector3{0.0,-1.0,0.0}
+    light = rl.Vector3Normalize(light)
+
     rotationAngle: f32 = 0.0
+
+    renderType: i8 = 2
 
     for !rl.WindowShouldClose() {
         
-        HandleInputs(&camera)
+        HandleInputs(&camera, &renderType)
 
         viewMatrix := MakeViewMatrix(camera.position, camera.target)
         projectionMatrix := MakePerspectiveMatrix(FOV, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
@@ -46,8 +51,11 @@ main :: proc() {
 
         transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
-        DrawFlat(&transformedVertices, &cube.triangles, rl.GREEN)
-        DrawWireframe(&transformedVertices, &cube.triangles, rl.RED)
+        switch renderType {
+            case 2: DrawFlatShaded(&transformedVertices, &cube.triangles, light, rl.WHITE)
+            case 1: DrawLit(&transformedVertices, &cube.triangles, rl.WHITE)
+            case 0: DrawWireframe(&transformedVertices, &cube.triangles, rl.RED)
+        }
 
         rl.EndDrawing()
     }
@@ -63,10 +71,16 @@ TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: ^Matrix4x4) -> []rl.Vect
     return transformedVertices
 }
 
-HandleInputs :: proc(camera: ^Camera) {
+HandleInputs :: proc(camera: ^Camera, renderType: ^i8) {
     step: f32 = 0.1
     if rl.IsKeyDown(rl.KeyboardKey.W) { camera.position += rl.Vector3{0.0, 0.0, step} } 
     if rl.IsKeyDown(rl.KeyboardKey.S) { camera.position += rl.Vector3{0.0, 0.0, -step} } 
     if rl.IsKeyDown(rl.KeyboardKey.A) { camera.target += rl.Vector3{-step, 0.0, 0.0} } 
     if rl.IsKeyDown(rl.KeyboardKey.D) { camera.target += rl.Vector3{step, 0.0, 0.0} }
+
+    if rl.IsKeyPressed(rl.KeyboardKey.LEFT) {
+        renderType^ = (renderType^ + 2) % 3
+    } else if rl.IsKeyPressed(rl.KeyboardKey.RIGHT) {
+        renderType^ = (renderType^ + 1) % 3
+    }
 }

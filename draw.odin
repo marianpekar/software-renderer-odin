@@ -23,7 +23,7 @@ DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.C
     }
 }
 
-DrawFlat :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
+DrawLit :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -42,6 +42,47 @@ DrawFlat :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color)
             i32(p2.x), i32(p2.y),
             i32(p3.x), i32(p3.y),
             color
+        )
+    }
+}
+
+DrawFlatShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, lightDir: rl.Vector3, baseColor: rl.Color, ambient:f32 = 0.2) {
+    for tri in triangles {
+        v1 := vertices[tri[0]]
+        v2 := vertices[tri[1]]
+        v3 := vertices[tri[2]]
+
+        edge1 := v2 - v1
+        edge2 := v3 - v1
+    
+        normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+
+        toCamera := rl.Vector3Normalize(v1)
+    
+        if (rl.Vector3DotProduct(normal, toCamera) >= 0.0) {
+            continue
+        }
+
+        intensity := rl.Vector3DotProduct(normal, lightDir)
+        intensity = math.clamp(intensity, 0.0, 1.0)
+        intensity = math.clamp(ambient + intensity, 0.0, 1.0)
+
+        shadedColor := rl.Color{
+            u8(f32(baseColor.r) * intensity),
+            u8(f32(baseColor.g) * intensity),
+            u8(f32(baseColor.b) * intensity),
+            baseColor.a
+        }
+
+        p1 := ProjectToScreen(&v1)
+        p2 := ProjectToScreen(&v2)
+        p3 := ProjectToScreen(&v3)
+
+        DrawFilledTriangle(
+            i32(p1.x), i32(p1.y),
+            i32(p2.x), i32(p2.y),
+            i32(p3.x), i32(p3.y),
+            shadedColor
         )
     }
 }
@@ -123,13 +164,13 @@ ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector2 {
     return rl.Vector2{screenX, screenY}
 }
 
-IsBackFace :: proc(v0, v1, v2: ^rl.Vector3) -> bool {
-    edge1 := v1^ - v0^
-    edge2 := v2^ - v0^
+IsBackFace :: proc(v1, v2, v3: ^rl.Vector3) -> bool {
+    edge1 := v2^ - v1^
+    edge2 := v3^ - v1^
 
     normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
     
-    toCamera := rl.Vector3Normalize(v0^)
+    toCamera := rl.Vector3Normalize(v1^)
     
     return rl.Vector3DotProduct(normal, toCamera) >= 0.0 
 }
