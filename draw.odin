@@ -3,16 +3,44 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
+DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
+    for tri in triangles {
+        v1 := &vertices[tri[0]]
+        v2 := &vertices[tri[1]]
+        v3 := &vertices[tri[2]]
+
+        if (IsBackFace(v1, v2, v3)) {
+            continue
+        }
+
+        p1 := ProjectToScreen(v1)
+        p2 := ProjectToScreen(v2)
+        p3 := ProjectToScreen(v3)
+
+        rl.DrawLineV(p1, p2, color)
+        rl.DrawLineV(p2, p3, color)
+        rl.DrawLineV(p3, p1, color)
+    }
+}
+
 DrawFlat :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
     for tri in triangles {
-        v1 := ProjectToScreen(&vertices[tri[0]])
-        v2 := ProjectToScreen(&vertices[tri[1]])
-        v3 := ProjectToScreen(&vertices[tri[2]])
+        v1 := &vertices[tri[0]]
+        v2 := &vertices[tri[1]]
+        v3 := &vertices[tri[2]]
+
+        if (IsBackFace(v1, v2, v3)) {
+            continue
+        }
+
+        p1 := ProjectToScreen(v1)
+        p2 := ProjectToScreen(v2)
+        p3 := ProjectToScreen(v3)
 
         DrawFilledTriangle(
-            i32(v1.x), i32(v1.y),
-            i32(v2.x), i32(v2.y),
-            i32(v3.x), i32(v3.y),
+            i32(p1.x), i32(p1.y),
+            i32(p2.x), i32(p2.y),
+            i32(p3.x), i32(p3.y),
             color
         )
     }
@@ -81,18 +109,6 @@ DrawFilledTriangle :: proc(
     }
 }
 
-DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
-    for tri in triangles {
-        p1 := ProjectToScreen(&vertices[tri[0]])
-        p2 := ProjectToScreen(&vertices[tri[1]])
-        p3 := ProjectToScreen(&vertices[tri[2]])
-
-        rl.DrawLineV(p1, p2, color)
-        rl.DrawLineV(p2, p3, color)
-        rl.DrawLineV(p3, p1, color)
-    }
-}
-
 ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector2 {
     if point.z == 0.0 {
         point.z = 0.0001
@@ -105,4 +121,15 @@ ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector2 {
     screenY := -projectedY * SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 2
 
     return rl.Vector2{screenX, screenY}
+}
+
+IsBackFace :: proc(v0, v1, v2: ^rl.Vector3) -> bool {
+    edge1 := v1^ - v0^
+    edge2 := v2^ - v0^
+
+    normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+    
+    toCamera := rl.Vector3Normalize(v0^)
+    
+    return rl.Vector3DotProduct(normal, toCamera) >= 0.0 
 }
