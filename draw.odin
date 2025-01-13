@@ -172,7 +172,47 @@ DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.V
             i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
             i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
             i32(p3.x), i32(p3.y), p3.z, p3.w, uv3.x, uv3.y,
-            texture
+            texture,
+            1.0
+        )
+    }
+}
+
+DrawTexturedShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.Vector2, lightDir: rl.Vector3, texture: ^Texture, ambient:f32 = 0.2) {
+    for tri in triangles {
+        v1 := &vertices[tri[0]]
+        v2 := &vertices[tri[1]]
+        v3 := &vertices[tri[2]]
+
+        uv1 := &uvs[tri[0]]
+        uv2 := &uvs[tri[1]]
+        uv3 := &uvs[tri[2]]
+
+        edge1 := v2^ - v1^
+        edge2 := v3^ - v1^
+    
+        normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+
+        toCamera := rl.Vector3Normalize(v1^)
+    
+        if (rl.Vector3DotProduct(normal, toCamera) >= 0.0) {
+            continue
+        }
+
+        intensity := rl.Vector3DotProduct(normal, lightDir)
+        intensity = math.clamp(intensity, 0.0, 1.0)
+        intensity = math.clamp(ambient + intensity, 0.0, 1.0)
+
+        p1 := ProjectToScreen(v1)
+        p2 := ProjectToScreen(v2)
+        p3 := ProjectToScreen(v3)
+
+        DrawTexturedTriangle(
+            i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
+            i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
+            i32(p3.x), i32(p3.y), p3.z, p3.w, uv3.x, uv3.y,
+            texture,
+            intensity
         )
     }
 }
@@ -181,7 +221,8 @@ DrawTexturedTriangle :: proc(
     x0, y0: i32, z0, w0, u0, v0: f32, 
     x1, y1: i32, z1, w1, u1, v1: f32,
     x2, y2: i32, z2, w2, u2, v2: f32,
-    texture: ^Texture
+    texture: ^Texture,
+    intensity: f32
 ) {
     x0_, y0_, z0_, w0_, u0_, v0_ := x0, y0, z0, w0, u0, v0
     x1_, y1_, z1_, w1_, u1_, v1_ := x1, y1, z1, w1, u1, v1
@@ -238,7 +279,7 @@ DrawTexturedTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture)
+                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity)
             }
         }
     }
@@ -257,7 +298,7 @@ DrawTexturedTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture)
+                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity)
             }
         }
     }
@@ -267,7 +308,8 @@ DrawTexel :: proc(
     x, y: i32,
     pointA, pointB, pointC: ^rl.Vector4,
     uvA, uvB, uvC: ^rl.Vector2,
-    texture: ^Texture
+    texture: ^Texture,
+    intensity: f32
 ) {
     p := rl.Vector2{f32(x), f32(y)}
     a := rl.Vector2{pointA.x, pointA.y}
@@ -292,7 +334,14 @@ DrawTexel :: proc(
 
     color := texture.pixels[texY * texture.width + texX]
 
-    rl.DrawPixel(x, y, color)
+    shadedColor := rl.Color{
+        u8(f32(color.r) * intensity),
+        u8(f32(color.g) * intensity),
+        u8(f32(color.b) * intensity),
+        color.a
+    }
+
+    rl.DrawPixel(x, y, shadedColor)
 }
 
 

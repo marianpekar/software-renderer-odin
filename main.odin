@@ -20,7 +20,7 @@ main :: proc() {
     translation := rl.Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
-    renderTypesCount :: 4
+    renderTypesCount :: 5
     renderType: i8 = renderTypesCount - 1
 
     texture := LoadTextureFromFile("assets/box.png")
@@ -54,6 +54,7 @@ main :: proc() {
         transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
         switch renderType {
+            case 4: DrawTexturedShaded(&transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
             case 3: DrawTextured(&transformedVertices, &cube.triangles, &cube.uvs, &texture)
             case 2: DrawFlatShaded(&transformedVertices, &cube.triangles, light, rl.WHITE)
             case 1: DrawLit(&transformedVertices, &cube.triangles, rl.WHITE)
