@@ -4,7 +4,8 @@ import rl "vendor:raylib"
 
 Mesh :: struct {
     vertices: []rl.Vector3,
-    triangles: []([3]int)
+    triangles: []([3]int),
+    uvs: []rl.Vector2,
 }
 
 MakeCube :: proc() -> Mesh {
@@ -40,12 +41,73 @@ MakeCube :: proc() -> Mesh {
     triangles[8] = [3]int{1, 6, 4}
     triangles[9] = [3]int{1, 4, 2}
 
-    // Bottom 
+    // Bottom
     triangles[10] = [3]int{5, 7, 0}
     triangles[11] = [3]int{5, 0, 3}
 
+    uvs := make([]rl.Vector2, 36)
+
+    // TODO: These UVs are incorrect, needs to be fixed
+    // Front
+    uvs[0] = rl.Vector2{0.0, 0.0}
+    uvs[1] = rl.Vector2{1.0, 0.0}
+    uvs[2] = rl.Vector2{0.0, 1.0}
+
+    uvs[3] = rl.Vector2{1.0, 1.0}
+    uvs[4] = rl.Vector2{0.0, 0.0}
+    uvs[5] = rl.Vector2{1.0, 0.0} 
+    
+    // Right
+    uvs[6] = rl.Vector2{0.0, 1.0}
+    uvs[7] = rl.Vector2{1.0, 1.0} 
+    uvs[8] = rl.Vector2{1.0, 0.0}
+    
+    uvs[9] = rl.Vector2{0.0, 0.0}
+    uvs[10] = rl.Vector2{1.0, 1.0} 
+    uvs[11] = rl.Vector2{0.0, 1.0}
+
+    // Back
+    uvs[12] = rl.Vector2{0.0, 0.0}
+    uvs[13] = rl.Vector2{1.0, 0.0} 
+    uvs[14] = rl.Vector2{0.0, 1.0} 
+    
+    uvs[15] = rl.Vector2{1.0, 1.0}
+    uvs[16] = rl.Vector2{1.0, 0.0}
+    uvs[17] = rl.Vector2{0.0, 0.0} 
+    
+    // Left
+    uvs[18] = rl.Vector2{1.0, 1.0} 
+    uvs[19] = rl.Vector2{0.0, 1.0}  
+    uvs[20] = rl.Vector2{1.0, 0.0}
+    
+    uvs[21] = rl.Vector2{0.0, 0.0}
+    uvs[22] = rl.Vector2{1.0, 1.0}  
+    uvs[23] = rl.Vector2{0.0, 1.0}
+    
+    // Top
+    uvs[24] = rl.Vector2{1.0, 0.0}
+    uvs[25] = rl.Vector2{0.0, 0.0} 
+    uvs[26] = rl.Vector2{1.0, 1.0} 
+    
+    uvs[27] = rl.Vector2{0.0, 1.0}
+    uvs[28] = rl.Vector2{1.0, 0.0}
+    uvs[29] = rl.Vector2{0.0, 0.0}
+    
+    // Bottom
+    uvs[30] = rl.Vector2{1.0, 1.0}  
+    uvs[31] = rl.Vector2{0.0, 1.0}  
+    uvs[32] = rl.Vector2{1.0, 0.0}
+    
+    uvs[33] = rl.Vector2{0.0, 0.0}
+    uvs[34] = rl.Vector2{1.0, 1.0}  
+    uvs[35] = rl.Vector2{0.0, 1.0} 
+
     return Mesh{
         vertices = vertices,
-        triangles = triangles
+        triangles = triangles,
+        uvs = uvs,
     }
 }
+
+
+

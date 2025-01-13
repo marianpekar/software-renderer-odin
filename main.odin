@@ -10,19 +10,24 @@ main :: proc() {
     cube := MakeCube()
 
     camera: Camera
-    camera.position = rl.Vector3{0.0, 0.0, -10.0}
+    camera.position = rl.Vector3{0.0, 0.0, -3.0}
     camera.target = rl.Vector3{0.0, 0.0, 0.0}
 
-    light := rl.Vector3{0.0,-1.0,0.0}
+    light := rl.Vector3{0.0, -1.0, 0.0}
     light = rl.Vector3Normalize(light)
 
-    rotationAngle: f32 = 0.0
+    rotation := rl.Vector3{0.0, 0.0, 0.0}
+    translation := rl.Vector3{0.0, 0.0, 0.0}
+    scale: f32 = 1.0
 
-    renderType: i8 = 2
+    renderTypesCount :: 4
+    renderType: i8 = renderTypesCount - 1
+
+    texture := LoadTextureFromFile("assets/box.png")
 
     for !rl.WindowShouldClose() {
         
-        HandleInputs(&camera, &renderType)
+        HandleInputs(&translation, &rotation, &scale, &renderType, renderTypesCount)
 
         viewMatrix := MakeViewMatrix(camera.position, camera.target)
         projectionMatrix := MakePerspectiveMatrix(FOV, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
@@ -30,15 +35,12 @@ main :: proc() {
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
 
-        rotationAngle += 0.01
-        translationMatrix := MakeTranslationMatrix(math.cos_f32(f32(rl.GetTime())), math.sin_f32(f32(rl.GetTime())), 0.0)
-        //translationMatrix := MakeTranslationMatrix(0.0, 0.0, 0.0)
+        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
 
-        rotationX := MakeRotationMatrixX(rotationAngle)
-        rotationY := MakeRotationMatrixY(rotationAngle)
-        rotationZ := MakeRotationMatrixZ(rotationAngle)
+        rotationX := MakeRotationMatrixX(rotation.x)
+        rotationY := MakeRotationMatrixY(rotation.y)
+        rotationZ := MakeRotationMatrixZ(rotation.z)
 
-        scale := math.sin_f32(f32(rl.GetTime())) + 2
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
 
         modelMatrix := Mat4Mul(&rotationX, &rotationY)
@@ -52,6 +54,7 @@ main :: proc() {
         transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
         switch renderType {
+            case 3: DrawTextured(&transformedVertices, &cube.triangles, &cube.uvs, &texture)
             case 2: DrawFlatShaded(&transformedVertices, &cube.triangles, light, rl.WHITE)
             case 1: DrawLit(&transformedVertices, &cube.triangles, rl.WHITE)
             case 0: DrawWireframe(&transformedVertices, &cube.triangles, rl.RED)
@@ -69,18 +72,4 @@ TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: ^Matrix4x4) -> []rl.Vect
         transformedVertices[i] = Mat4MulVec3(mat, vertices[i])
     }
     return transformedVertices
-}
-
-HandleInputs :: proc(camera: ^Camera, renderType: ^i8) {
-    step: f32 = 0.1
-    if rl.IsKeyDown(rl.KeyboardKey.W) { camera.position += rl.Vector3{0.0, 0.0, step} } 
-    if rl.IsKeyDown(rl.KeyboardKey.S) { camera.position += rl.Vector3{0.0, 0.0, -step} } 
-    if rl.IsKeyDown(rl.KeyboardKey.A) { camera.target += rl.Vector3{-step, 0.0, 0.0} } 
-    if rl.IsKeyDown(rl.KeyboardKey.D) { camera.target += rl.Vector3{step, 0.0, 0.0} }
-
-    if rl.IsKeyPressed(rl.KeyboardKey.LEFT) {
-        renderType^ = (renderType^ + 2) % 3
-    } else if rl.IsKeyPressed(rl.KeyboardKey.RIGHT) {
-        renderType^ = (renderType^ + 1) % 3
-    }
 }
