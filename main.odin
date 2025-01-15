@@ -20,14 +20,14 @@ main :: proc() {
     translation := rl.Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
-    renderTypesCount :: 6
-    renderType: i8 = renderTypesCount - 1
+    renderModesCount :: 6
+    renderMode: i8 = renderModesCount - 1
 
     texture := LoadTextureFromFile("assets/box.png")
 
     for !rl.WindowShouldClose() {
         
-        HandleInputs(&translation, &rotation, &scale, &renderType, renderTypesCount)
+        HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount)
 
         viewMatrix := MakeViewMatrix(camera.position, camera.target)
         projectionMatrix := MakePerspectiveMatrix(FOV, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
@@ -53,7 +53,7 @@ main :: proc() {
 
         transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
 
-        switch renderType {
+        switch renderMode {
             case 5: DrawTexturedShaded(&transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
             case 4: DrawTextured(&transformedVertices, &cube.triangles, &cube.uvs, &texture)
             case 3: DrawFlatShaded(&transformedVertices, &cube.triangles, light, rl.WHITE)

@@ -2,7 +2,7 @@ package main
 
 import rl "vendor:raylib"
 
-HandleInputs :: proc(translation, rotation: ^rl.Vector3, scale: ^f32, renderType: ^i8, renderTypesCount: i8) {
+HandleInputs :: proc(translation, rotation: ^rl.Vector3, scale: ^f32, renderMode: ^i8, renderModesCount: i8) {
     step: f32 = 0.1
     if rl.IsKeyDown(rl.KeyboardKey.W) { translation.z += step } 
     if rl.IsKeyDown(rl.KeyboardKey.S) { translation.z -= step } 
@@ -22,8 +22,8 @@ HandleInputs :: proc(translation, rotation: ^rl.Vector3, scale: ^f32, renderType
     if rl.IsKeyDown(rl.KeyboardKey.KP_SUBTRACT) { scale^ -= step }
 
     if rl.IsKeyPressed(rl.KeyboardKey.LEFT) {
-        renderType^ = (renderType^ + renderTypesCount - 1) % renderTypesCount
+        renderMode^ = (renderMode^ + renderModesCount - 1) % renderModesCount
     } else if rl.IsKeyPressed(rl.KeyboardKey.RIGHT) {
-        renderType^ = (renderType^ + 1) % renderTypesCount
+        renderMode^ = (renderMode^ + 1) % renderModesCount
     }
 }
