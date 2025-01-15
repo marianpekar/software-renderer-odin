@@ -3,13 +3,13 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
+DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color, cullBackFace: bool = true) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
         v3 := &vertices[tri[2]]
 
-        if (IsBackFace(v1, v2, v3)) {
+        if (cullBackFace && IsBackFace(v1, v2, v3)) {
             continue
         }
 
