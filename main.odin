@@ -23,7 +23,7 @@ main :: proc() {
     renderModesCount :: 6
     renderMode: i8 = renderModesCount - 1
 
-    texture := LoadTextureFromFile("assets/box.png")
+    texture := LoadTextureFromFile("assets/uv_checker.png")
 
     for !rl.WindowShouldClose() {
         
