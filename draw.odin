@@ -253,10 +253,6 @@ DrawTexturedTriangle :: proc(
         v0_, v1_ = v1_, v0_
     }
 
-    v0_ = 1.0 - v0_;
-    v1_ = 1.0 - v1_;
-    v2_ = 1.0 - v2_;
-
     pointA := rl.Vector4{ f32(x0_), f32(y0_), z0_, w0_ }
     pointB := rl.Vector4{ f32(x1_), f32(y1_), z1_, w1_ }
     pointC := rl.Vector4{ f32(x2_), f32(y2_), z2_, w2_ }
@@ -344,18 +340,21 @@ DrawTexel :: proc(
     rl.DrawPixel(x, y, shadedColor)
 }
 
-
 BarycentricWeights :: proc(a, b, c, p: rl.Vector2) -> rl.Vector3 {
-    ab := rl.Vector2{b.x - a.x, b.y - a.y}
-    ac := rl.Vector2{c.x - a.x, c.y - a.y}
-    ap := rl.Vector2{p.x - a.x, p.y - a.y}
+    ac := c - a 
+    ab := b - a
+    ap := p - a
+    pc := c - p
+    pb := b - p
 
-    areaABC := ab.x * ac.y - ab.y * ac.x
-    areaPBC := (b.x - p.x) * (c.y - p.y) - (b.y - p.y) * (c.x - p.x)
-    areaPCA := (c.x - p.x) * (a.y - p.y) - (c.y - p.y) * (a.x - p.x)
+    area := (ac.x * ab.y - ac.y * ab.x)
 
-    alpha := areaPBC / areaABC
-    beta := areaPCA / areaABC
+    if area == 0.0 {
+        return rl.Vector3{0.0, 0.0, 0.0}
+    }
+
+    alpha := (pc.x * pb.y - pc.y * pb.x) / area
+    beta := (ac.x * ap.y - ac.y * ap.x) / area
     gamma := 1.0 - alpha - beta
 
     return rl.Vector3{alpha, beta, gamma}
