@@ -151,16 +151,18 @@ DrawFilledTriangle :: proc(
 }
 
 DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.Vector2, texture: ^Texture) {
-    for tri in triangles {
+    for i in 0..<len(triangles) {
+        tri := triangles[i]
+
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
         v3 := &vertices[tri[2]]
 
-        uv1 := &uvs[tri[0]]
-        uv2 := &uvs[tri[1]]
-        uv3 := &uvs[tri[2]]
+        uv1 := uvs[i*3 + 0]
+        uv2 := uvs[i*3 + 1]
+        uv3 := uvs[i*3 + 2]
 
-        if (IsBackFace(v1, v2, v3)) {
+        if IsBackFace(v1, v2, v3) {
             continue
         }
 
@@ -172,21 +174,23 @@ DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.V
             i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
             i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
             i32(p3.x), i32(p3.y), p3.z, p3.w, uv3.x, uv3.y,
-            texture,
-            1.0
+            texture, 1.0
         )
     }
 }
 
+
 DrawTexturedShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.Vector2, lightDir: rl.Vector3, texture: ^Texture, ambient:f32 = 0.2) {
-    for tri in triangles {
+    for i in 0..<len(triangles) {
+        tri := triangles[i]
+
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
         v3 := &vertices[tri[2]]
 
-        uv1 := &uvs[tri[0]]
-        uv2 := &uvs[tri[1]]
-        uv3 := &uvs[tri[2]]
+        uv1 := uvs[i*3 + 0]
+        uv2 := uvs[i*3 + 1]
+        uv3 := uvs[i*3 + 2]
 
         edge1 := v2^ - v1^
         edge2 := v3^ - v1^
@@ -320,13 +324,14 @@ DrawTexel :: proc(
 
     interpolatedU := (uvA.x / pointA.w) * alpha + (uvB.x / pointB.w) * beta + (uvC.x / pointC.w) * gamma
     interpolatedV := (uvA.y / pointA.w) * alpha + (uvB.y / pointB.w) * beta + (uvC.y / pointC.w) * gamma
+
     interpolatedReciprocalW := (1.0 / pointA.w) * alpha + (1.0 / pointB.w) * beta + (1.0 / pointC.w) * gamma
 
     interpolatedU /= interpolatedReciprocalW
     interpolatedV /= interpolatedReciprocalW
 
-    texX := i32(math.abs(interpolatedU * f32(texture.width))) % texture.width
-    texY := i32(math.abs(interpolatedV * f32(texture.height))) % texture.height
+    texX := (i32(interpolatedU * f32(texture.width)) % texture.width + texture.width) % texture.width
+    texY := (i32(interpolatedV * f32(texture.height)) % texture.height + texture.height) % texture.height
 
     color := texture.pixels[texY * texture.width + texX]
 
@@ -359,7 +364,6 @@ BarycentricWeights :: proc(a, b, c, p: rl.Vector2) -> rl.Vector3 {
 
     return rl.Vector3{alpha, beta, gamma}
 }
-
 
 ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector4 {
     if point.z == 0.0 {
