@@ -108,18 +108,3 @@ MakeViewMatrix :: proc(eye: rl.Vector3, target: rl.Vector3) -> Matrix4x4 {
         }
     }
 }
-
-MakePerspectiveMatrix :: proc(fovDeg: f32, aspect: f32, near: f32, far: f32) -> Matrix4x4 {
-    fovRad := math.to_radians_f32(fovDeg)
-    f := 1.0 / math.tan_f32(fovRad / 2.0)
-    nf := 1.0 / (far - near)
-
-    return Matrix4x4{
-        m = [4][4]f32{
-            {f / aspect, 0.0,  0.0,                     0.0},
-            {0.0,        f,    0.0,                     0.0},
-            {0.0,        0.0,  (far + near) * nf,      -1.0},
-            {0.0,        0.0,  2.0 * far * near * nf,   0.0}
-        }
-    }
-}

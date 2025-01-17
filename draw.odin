@@ -366,15 +366,18 @@ BarycentricWeights :: proc(a, b, c, p: rl.Vector2) -> rl.Vector3 {
 }
 
 ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector4 {
+    fovRad := math.to_radians_f32(FOV)
+    f := 1.0 / math.tan_f32(fovRad / 2.0)
+    
     if point.z == 0.0 {
         point.z = 0.0001
     }
 
-    projectedX := point.x / point.z
-    projectedY := point.y / point.z
+    projectedX := (point.x * (f / ASPECT)) / point.z
+    projectedY := (point.y * f) / point.z
 
-    screenX := projectedX * SCREEN_WIDTH / 2 + SCREEN_WIDTH / 2
-    screenY := -projectedY * SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 2
+    screenX := (projectedX * 0.5 + 0.5) * SCREEN_WIDTH
+    screenY := (-projectedY * 0.5 + 0.5) * SCREEN_HEIGHT
 
     return rl.Vector4{screenX, screenY, point.z, point.z}
 }

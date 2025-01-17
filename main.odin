@@ -29,29 +29,29 @@ main :: proc() {
         
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount)
 
-        viewMatrix := MakeViewMatrix(camera.position, camera.target)
-        projectionMatrix := MakePerspectiveMatrix(FOV, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
-
-        rl.BeginDrawing()
-        rl.ClearBackground(rl.BLACK)
-
+        // Translation
         translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
 
+        // Rotation
         rotationX := MakeRotationMatrixX(rotation.x)
         rotationY := MakeRotationMatrixY(rotation.y)
         rotationZ := MakeRotationMatrixZ(rotation.z)
 
+        // Scale
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
 
+        // Transformations
+        viewMatrix  := MakeViewMatrix(camera.position, camera.target)
         modelMatrix := Mat4Mul(&rotationX, &rotationY)
-        modelMatrix = Mat4Mul(&modelMatrix, &rotationZ)
-        modelMatrix = Mat4Mul(&translationMatrix, &modelMatrix)
-        modelMatrix = Mat4Mul(&scaleMatrix, &modelMatrix)
+        modelMatrix  = Mat4Mul(&modelMatrix, &rotationZ)
+        modelMatrix  = Mat4Mul(&translationMatrix, &modelMatrix)
+        modelMatrix  = Mat4Mul(&scaleMatrix, &modelMatrix)
+        finalMatrix := Mat4Mul(&viewMatrix, &modelMatrix)
 
-        vpMatrix := Mat4Mul(&projectionMatrix, &viewMatrix)
-        mvpMatrix := Mat4Mul(&vpMatrix, &modelMatrix)
+        TransformVertices(&cube.transformedVertices, &cube.vertices, &finalMatrix)
 
-        TransformVertices(&cube.transformedVertices, &cube.vertices, &mvpMatrix)
+        rl.BeginDrawing()
+        rl.ClearBackground(rl.BLACK)
 
         switch renderMode {
             case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
