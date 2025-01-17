@@ -10,7 +10,7 @@ main :: proc() {
     cube := MakeCube()
 
     camera: Camera
-    camera.position = rl.Vector3{0.0, 0.0, -3.0}
+    camera.position = rl.Vector3{0.0, 0.0, -5.0}
     camera.target = rl.Vector3{0.0, 0.0, 0.0}
 
     light := rl.Vector3{0.0, -1.0, 0.0}
