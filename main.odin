@@ -51,15 +51,15 @@ main :: proc() {
         vpMatrix := Mat4Mul(&projectionMatrix, &viewMatrix)
         mvpMatrix := Mat4Mul(&vpMatrix, &modelMatrix)
 
-        transformedVertices := TransformVertices(&cube.vertices, &mvpMatrix)
+        TransformVertices(&cube.transformedVertices, &cube.vertices, &mvpMatrix)
 
         switch renderMode {
-            case 5: DrawTexturedShaded(&transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
-            case 4: DrawTextured(&transformedVertices, &cube.triangles, &cube.uvs, &texture)
-            case 3: DrawFlatShaded(&transformedVertices, &cube.triangles, light, rl.WHITE)
-            case 2: DrawLit(&transformedVertices, &cube.triangles, rl.WHITE)
-            case 1: DrawWireframe(&transformedVertices, &cube.triangles, rl.RED)
-            case 0: DrawWireframe(&transformedVertices, &cube.triangles, rl.RED, false)
+            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
+            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture)
+            case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE)
+            case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE)
+            case 1: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED)
+            case 0: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED, false)
         }
 
         rl.EndDrawing()
@@ -68,10 +68,8 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVertices :: proc(vertices: ^[]rl.Vector3, mat: ^Matrix4x4) -> []rl.Vector3 {
-    transformedVertices := make([]rl.Vector3, len(vertices))
+TransformVertices :: proc(transformedVertices, vertices: ^[]rl.Vector3, mat: ^Matrix4x4) {
     for i in 0..<len(vertices) {
         transformedVertices[i] = Mat4MulVec3(mat, vertices[i])
     }
-    return transformedVertices
 }

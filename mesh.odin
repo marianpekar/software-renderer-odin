@@ -3,12 +3,14 @@ package main
 import rl "vendor:raylib"
 
 Mesh :: struct {
+    transformedVertices: []rl.Vector3,
     vertices: []rl.Vector3,
     triangles: []([3]int),
     uvs: []rl.Vector2,
 }
 
 MakeCube :: proc() -> Mesh {
+    transformedVertices := make([]rl.Vector3, 8)
     vertices := make([]rl.Vector3, 8)
     vertices[0] = rl.Vector3{-1.0, -1.0, -1.0}
     vertices[1] = rl.Vector3{-1.0,  1.0, -1.0}
@@ -102,6 +104,7 @@ MakeCube :: proc() -> Mesh {
     uvs[35] = rl.Vector2{1.0, 0.0}
 
     return Mesh{
+        transformedVertices = transformedVertices,
         vertices = vertices,
         triangles = triangles,
         uvs = uvs,
