@@ -17,6 +17,10 @@ DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.C
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
+        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+            continue
+        }
+
         rl.DrawLineV({p1.x, p1.y}, {p2.x, p2.y}, color)
         rl.DrawLineV({p2.x, p2.y}, {p3.x, p3.y}, color)
         rl.DrawLineV({p3.x, p3.y}, {p1.x, p1.y}, color)
@@ -36,6 +40,10 @@ DrawLit :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) 
         p1 := ProjectToScreen(v1)
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
+
+        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+            continue
+        }
 
         DrawFilledTriangle(
             i32(p1.x), i32(p1.y),
@@ -77,6 +85,10 @@ DrawFlatShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, lightDir: 
         p1 := ProjectToScreen(&v1)
         p2 := ProjectToScreen(&v2)
         p3 := ProjectToScreen(&v3)
+
+        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+            continue
+        }
 
         DrawFilledTriangle(
             i32(p1.x), i32(p1.y),
@@ -170,6 +182,10 @@ DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.V
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
+        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+            continue
+        }
+
         DrawTexturedTriangle(
             i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
             i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
@@ -210,6 +226,10 @@ DrawTexturedShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^
         p1 := ProjectToScreen(v1)
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
+
+        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+            continue
+        }
 
         DrawTexturedTriangle(
             i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
@@ -391,4 +411,22 @@ IsBackFace :: proc(v1, v2, v3: ^rl.Vector3) -> bool {
     toCamera := rl.Vector3Normalize(v1^)
     
     return rl.Vector3DotProduct(normal, toCamera) >= 0.0 
+}
+
+IsFaceOutsideViewport :: proc(p1, p2, p3: ^rl.Vector4) -> bool {
+    if (p1.z > -NEAR_PLANE && p2.z > -NEAR_PLANE && p3.z > -NEAR_PLANE) || 
+       (p1.z < -FAR_PLANE  && p2.z < -FAR_PLANE  && p3.z < -FAR_PLANE) {
+        return true
+    }
+
+    minX := math.min(p1.x, math.min(p2.x, p3.x))
+    maxX := math.max(p1.x, math.max(p2.x, p3.x))
+    minY := math.min(p1.y, math.min(p2.y, p3.y))
+    maxY := math.max(p1.y, math.max(p2.y, p3.y))
+
+    if maxX < 0 || minX > SCREEN_WIDTH || maxY < 0 || minY > SCREEN_HEIGHT {
+        return true
+    }
+
+    return false
 }
