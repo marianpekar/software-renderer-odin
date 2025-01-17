@@ -3,7 +3,7 @@ package main
 import rl "vendor:raylib"
 
 HandleInputs :: proc(translation, rotation: ^rl.Vector3, scale: ^f32, renderMode: ^i8, renderModesCount: i8) {
-    step: f32 = 0.1
+    step: f32 = 0.05
     if rl.IsKeyDown(rl.KeyboardKey.W) { translation.z += step } 
     if rl.IsKeyDown(rl.KeyboardKey.S) { translation.z -= step } 
     if rl.IsKeyDown(rl.KeyboardKey.A) { translation.x -= step } 
