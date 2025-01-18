@@ -10,14 +10,14 @@ main :: proc() {
     cube := MakeCube()
 
     camera: Camera
-    camera.position = rl.Vector3{0.0, 0.0, -5.0}
-    camera.target = rl.Vector3{0.0, 0.0, 0.0}
+    camera.position = Vector3{0.0, 0.0, -5.0}
+    camera.target = Vector3{0.0, 0.0, 0.0}
 
-    light := rl.Vector3{0.0, -1.0, 0.0}
-    light = rl.Vector3Normalize(light)
+    light := Vector3{0.0, -1.0, 0.0}
+    light = Vector3Normalize(light)
 
-    rotation := rl.Vector3{0.0, 0.0, 0.0}
-    translation := rl.Vector3{0.0, 0.0, 0.0}
+    rotation := Vector3{0.0, 0.0, 0.0}
+    translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
     renderModesCount :: 6
@@ -68,8 +68,8 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVertices :: proc(transformedVertices, vertices: ^[]rl.Vector3, mat: ^Matrix4x4) {
+TransformVertices :: proc(transformedVertices, vertices: ^[]Vector3, mat: ^Matrix4x4) {
     for i in 0..<len(vertices) {
-        transformedVertices[i] = Mat4MulVec3(mat, vertices[i])
+        transformedVertices[i] = Mat4MulVec3(mat, &vertices[i])
     }
 }

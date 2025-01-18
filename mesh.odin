@@ -1,25 +1,23 @@
 package main
 
-import rl "vendor:raylib"
-
 Mesh :: struct {
-    transformedVertices: []rl.Vector3,
-    vertices: []rl.Vector3,
+    transformedVertices: []Vector3,
+    vertices: []Vector3,
     triangles: []([3]int),
-    uvs: []rl.Vector2,
+    uvs: []Vector2,
 }
 
 MakeCube :: proc() -> Mesh {
-    transformedVertices := make([]rl.Vector3, 8)
-    vertices := make([]rl.Vector3, 8)
-    vertices[0] = rl.Vector3{-1.0, -1.0, -1.0}
-    vertices[1] = rl.Vector3{-1.0,  1.0, -1.0}
-    vertices[2] = rl.Vector3{ 1.0,  1.0, -1.0}
-    vertices[3] = rl.Vector3{ 1.0, -1.0, -1.0}
-    vertices[4] = rl.Vector3{ 1.0,  1.0,  1.0}
-    vertices[5] = rl.Vector3{ 1.0, -1.0,  1.0}
-    vertices[6] = rl.Vector3{-1.0,  1.0,  1.0}
-    vertices[7] = rl.Vector3{-1.0, -1.0,  1.0}
+    transformedVertices := make([]Vector3, 8)
+    vertices := make([]Vector3, 8)
+    vertices[0] = Vector3{-1.0, -1.0, -1.0}
+    vertices[1] = Vector3{-1.0,  1.0, -1.0}
+    vertices[2] = Vector3{ 1.0,  1.0, -1.0}
+    vertices[3] = Vector3{ 1.0, -1.0, -1.0}
+    vertices[4] = Vector3{ 1.0,  1.0,  1.0}
+    vertices[5] = Vector3{ 1.0, -1.0,  1.0}
+    vertices[6] = Vector3{-1.0,  1.0,  1.0}
+    vertices[7] = Vector3{-1.0, -1.0,  1.0}
 
     triangles := make([][3]int, 12)
 
@@ -47,61 +45,61 @@ MakeCube :: proc() -> Mesh {
     triangles[10] = [3]int{5, 7, 0}
     triangles[11] = [3]int{5, 0, 3}
 
-    uvs := make([]rl.Vector2, 36)
+    uvs := make([]Vector2, 36)
 
     // Front
-    uvs[0] = rl.Vector2{0.0, 0.0}
-    uvs[1] = rl.Vector2{0.0, 1.0}
-    uvs[2] = rl.Vector2{1.0, 1.0}
+    uvs[0] =  Vector2{0.0, 0.0}
+    uvs[1] =  Vector2{0.0, 1.0}
+    uvs[2] =  Vector2{1.0, 1.0}
 
-    uvs[3] = rl.Vector2{0.0, 0.0}
-    uvs[4] = rl.Vector2{1.0, 1.0}
-    uvs[5] = rl.Vector2{1.0, 0.0}
+    uvs[3] =  Vector2{0.0, 0.0}
+    uvs[4] =  Vector2{1.0, 1.0}
+    uvs[5] =  Vector2{1.0, 0.0}
     
     // Right
-    uvs[6] = rl.Vector2{0.0, 0.0}
-    uvs[7] = rl.Vector2{0.0, 1.0}
-    uvs[8] = rl.Vector2{1.0, 1.0}
+    uvs[6] =  Vector2{0.0, 0.0}
+    uvs[7] =  Vector2{0.0, 1.0}
+    uvs[8] =  Vector2{1.0, 1.0}
 
-    uvs[9] = rl.Vector2{0.0, 0.0}
-    uvs[10] = rl.Vector2{1.0, 1.0}
-    uvs[11] = rl.Vector2{1.0, 0.0}
+    uvs[9] =  Vector2{0.0, 0.0}
+    uvs[10] = Vector2{1.0, 1.0}
+    uvs[11] = Vector2{1.0, 0.0}
 
     // Back
-    uvs[12] = rl.Vector2{0.0, 0.0}
-    uvs[13] = rl.Vector2{0.0, 1.0}
-    uvs[14] = rl.Vector2{1.0, 1.0}
+    uvs[12] = Vector2{0.0, 0.0}
+    uvs[13] = Vector2{0.0, 1.0}
+    uvs[14] = Vector2{1.0, 1.0}
 
-    uvs[15] = rl.Vector2{0.0, 0.0}
-    uvs[16] = rl.Vector2{1.0, 1.0}
-    uvs[17] = rl.Vector2{1.0, 0.0}
+    uvs[15] = Vector2{0.0, 0.0}
+    uvs[16] = Vector2{1.0, 1.0}
+    uvs[17] = Vector2{1.0, 0.0}
     
     // Left
-    uvs[18] = rl.Vector2{0.0, 0.0}
-    uvs[19] = rl.Vector2{0.0, 1.0}
-    uvs[20] = rl.Vector2{1.0, 1.0}
+    uvs[18] = Vector2{0.0, 0.0}
+    uvs[19] = Vector2{0.0, 1.0}
+    uvs[20] = Vector2{1.0, 1.0}
 
-    uvs[21] = rl.Vector2{0.0, 0.0}
-    uvs[22] = rl.Vector2{1.0, 1.0}
-    uvs[23] = rl.Vector2{1.0, 0.0}
+    uvs[21] = Vector2{0.0, 0.0}
+    uvs[22] = Vector2{1.0, 1.0}
+    uvs[23] = Vector2{1.0, 0.0}
     
     // Top
-    uvs[24] = rl.Vector2{0.0, 0.0}
-    uvs[25] = rl.Vector2{0.0, 1.0}
-    uvs[26] = rl.Vector2{1.0, 1.0}
+    uvs[24] = Vector2{0.0, 0.0}
+    uvs[25] = Vector2{0.0, 1.0}
+    uvs[26] = Vector2{1.0, 1.0}
 
-    uvs[27] = rl.Vector2{0.0, 0.0}
-    uvs[28] = rl.Vector2{1.0, 1.0}
-    uvs[29] = rl.Vector2{1.0, 0.0}
+    uvs[27] = Vector2{0.0, 0.0}
+    uvs[28] = Vector2{1.0, 1.0}
+    uvs[29] = Vector2{1.0, 0.0}
     
     // Bottom
-    uvs[30] = rl.Vector2{0.0, 0.0}
-    uvs[31] = rl.Vector2{0.0, 1.0}
-    uvs[32] = rl.Vector2{1.0, 1.0}
+    uvs[30] = Vector2{0.0, 0.0}
+    uvs[31] = Vector2{0.0, 1.0}
+    uvs[32] = Vector2{1.0, 1.0}
 
-    uvs[33] = rl.Vector2{0.0, 0.0}
-    uvs[34] = rl.Vector2{1.0, 1.0}
-    uvs[35] = rl.Vector2{1.0, 0.0}
+    uvs[33] = Vector2{0.0, 0.0}
+    uvs[34] = Vector2{1.0, 1.0}
+    uvs[35] = Vector2{1.0, 0.0}
 
     return Mesh{
         transformedVertices = transformedVertices,

@@ -3,7 +3,7 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color, cullBackFace: bool = true) {
+DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color, cullBackFace: bool = true) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -27,7 +27,7 @@ DrawWireframe :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.C
     }
 }
 
-DrawLit :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) {
+DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -54,7 +54,7 @@ DrawLit :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, color: rl.Color) 
     }
 }
 
-DrawFlatShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, lightDir: rl.Vector3, baseColor: rl.Color, ambient:f32 = 0.2) {
+DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, lightDir: Vector3, baseColor: rl.Color, ambient:f32 = 0.2) {
     for tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -63,15 +63,15 @@ DrawFlatShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, lightDir: 
         edge1 := v2 - v1
         edge2 := v3 - v1
     
-        normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+        normal := Vector3Normalize(Vector3CrossProduct(edge1, edge2))
 
-        toCamera := rl.Vector3Normalize(v1)
+        toCamera := Vector3Normalize(v1)
     
-        if (rl.Vector3DotProduct(normal, toCamera) >= 0.0) {
+        if (Vector3DotProduct(normal, toCamera) >= 0.0) {
             continue
         }
 
-        intensity := rl.Vector3DotProduct(normal, lightDir)
+        intensity := Vector3DotProduct(normal, lightDir)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity, 0.0, 1.0)
 
@@ -162,7 +162,7 @@ DrawFilledTriangle :: proc(
     }
 }
 
-DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.Vector2, texture: ^Texture) {
+DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, texture: ^Texture) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -196,7 +196,7 @@ DrawTextured :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.V
 }
 
 
-DrawTexturedShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^[]rl.Vector2, lightDir: rl.Vector3, texture: ^Texture, ambient:f32 = 0.2) {
+DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, lightDir: Vector3, texture: ^Texture, ambient:f32 = 0.2) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -211,15 +211,15 @@ DrawTexturedShaded :: proc(vertices: ^[]rl.Vector3, triangles: ^[][3]int, uvs: ^
         edge1 := v2^ - v1^
         edge2 := v3^ - v1^
     
-        normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+        normal := Vector3Normalize(Vector3CrossProduct(edge1, edge2))
 
-        toCamera := rl.Vector3Normalize(v1^)
+        toCamera := Vector3Normalize(v1^)
     
-        if (rl.Vector3DotProduct(normal, toCamera) >= 0.0) {
+        if (Vector3DotProduct(normal, toCamera) >= 0.0) {
             continue
         }
 
-        intensity := rl.Vector3DotProduct(normal, lightDir)
+        intensity := Vector3DotProduct(normal, lightDir)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity, 0.0, 1.0)
 
@@ -277,13 +277,13 @@ DrawTexturedTriangle :: proc(
         v0_, v1_ = v1_, v0_
     }
 
-    pointA := rl.Vector4{ f32(x0_), f32(y0_), z0_, w0_ }
-    pointB := rl.Vector4{ f32(x1_), f32(y1_), z1_, w1_ }
-    pointC := rl.Vector4{ f32(x2_), f32(y2_), z2_, w2_ }
+    pointA := Vector4{ f32(x0_), f32(y0_), z0_, w0_ }
+    pointB := Vector4{ f32(x1_), f32(y1_), z1_, w1_ }
+    pointC := Vector4{ f32(x2_), f32(y2_), z2_, w2_ }
 
-    uvA := rl.Vector2{ u0_, v0_ };
-    uvB := rl.Vector2{ u1_, v1_ };
-    uvC := rl.Vector2{ u2_, v2_ };
+    uvA := Vector2{ u0_, v0_ };
+    uvB := Vector2{ u1_, v1_ };
+    uvC := Vector2{ u2_, v2_ };
 
     // Draw flat-bottom triangle
     if y1_ != y0_ {
@@ -326,15 +326,15 @@ DrawTexturedTriangle :: proc(
 
 DrawTexel :: proc(
     x, y: i32,
-    pointA, pointB, pointC: ^rl.Vector4,
-    uvA, uvB, uvC: ^rl.Vector2,
+    pointA, pointB, pointC: ^Vector4,
+    uvA, uvB, uvC: ^Vector2,
     texture: ^Texture,
     intensity: f32
 ) {
-    p := rl.Vector2{f32(x), f32(y)}
-    a := rl.Vector2{pointA.x, pointA.y}
-    b := rl.Vector2{pointB.x, pointB.y}
-    c := rl.Vector2{pointC.x, pointC.y}
+    p := Vector2{f32(x), f32(y)}
+    a := Vector2{pointA.x, pointA.y}
+    b := Vector2{pointB.x, pointB.y}
+    c := Vector2{pointC.x, pointC.y}
 
     weights := BarycentricWeights(a, b, c, p)
 
@@ -365,7 +365,7 @@ DrawTexel :: proc(
     rl.DrawPixel(x, y, shadedColor)
 }
 
-BarycentricWeights :: proc(a, b, c, p: rl.Vector2) -> rl.Vector3 {
+BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
     ac := c - a 
     ab := b - a
     ap := p - a
@@ -375,17 +375,17 @@ BarycentricWeights :: proc(a, b, c, p: rl.Vector2) -> rl.Vector3 {
     area := (ac.x * ab.y - ac.y * ab.x)
 
     if area == 0.0 {
-        return rl.Vector3{0.0, 0.0, 0.0}
+        return Vector3{0.0, 0.0, 0.0}
     }
 
     alpha := (pc.x * pb.y - pc.y * pb.x) / area
     beta := (ac.x * ap.y - ac.y * ap.x) / area
     gamma := 1.0 - alpha - beta
 
-    return rl.Vector3{alpha, beta, gamma}
+    return Vector3{alpha, beta, gamma}
 }
 
-ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector4 {
+ProjectToScreen :: proc(point: ^Vector3) -> Vector4 {
     fovRad := math.to_radians_f32(FOV)
     f := 1.0 / math.tan_f32(fovRad / 2.0)
     
@@ -399,21 +399,21 @@ ProjectToScreen :: proc(point: ^rl.Vector3) -> rl.Vector4 {
     screenX := (projectedX * 0.5 + 0.5) * SCREEN_WIDTH
     screenY := (-projectedY * 0.5 + 0.5) * SCREEN_HEIGHT
 
-    return rl.Vector4{screenX, screenY, point.z, point.z}
+    return Vector4{screenX, screenY, point.z, point.z}
 }
 
-IsBackFace :: proc(v1, v2, v3: ^rl.Vector3) -> bool {
+IsBackFace :: proc(v1, v2, v3: ^Vector3) -> bool {
     edge1 := v2^ - v1^
     edge2 := v3^ - v1^
 
-    normal := rl.Vector3Normalize(rl.Vector3CrossProduct(edge1, edge2))
+    normal := Vector3Normalize(Vector3CrossProduct(edge1, edge2))
     
-    toCamera := rl.Vector3Normalize(v1^)
+    toCamera := Vector3Normalize(v1^)
     
-    return rl.Vector3DotProduct(normal, toCamera) >= 0.0 
+    return Vector3DotProduct(normal, toCamera) >= 0.0 
 }
 
-IsFaceOutsideViewport :: proc(p1, p2, p3: ^rl.Vector4) -> bool {
+IsFaceOutsideViewport :: proc(p1, p2, p3: ^Vector4) -> bool {
     if (p1.z > -NEAR_PLANE && p2.z > -NEAR_PLANE && p3.z > -NEAR_PLANE) || 
        (p1.z < -FAR_PLANE  && p2.z < -FAR_PLANE  && p3.z < -FAR_PLANE) {
         return true
