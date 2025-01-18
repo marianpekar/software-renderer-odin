@@ -168,7 +168,7 @@ DrawFilledTriangle :: proc(
     }
 }
 
-DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, texture: ^Texture) {
+DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, texture: ^Texture, zBuffer: ^ZBuffer) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -196,13 +196,15 @@ DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2
             i32(p1.x), i32(p1.y), p1.z, p1.w, uv1.x, uv1.y,
             i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
             i32(p3.x), i32(p3.y), p3.z, p3.w, uv3.x, uv3.y,
-            texture, 1.0
+            texture, 
+            1.0,
+            zBuffer
         )
     }
 }
 
 
-DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, lightDir: Vector3, texture: ^Texture, ambient:f32 = 0.2) {
+DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, lightDir: Vector3, texture: ^Texture, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -242,7 +244,8 @@ DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]V
             i32(p2.x), i32(p2.y), p2.z, p2.w, uv2.x, uv2.y,
             i32(p3.x), i32(p3.y), p3.z, p3.w, uv3.x, uv3.y,
             texture,
-            intensity
+            intensity,
+            zBuffer
         )
     }
 }
@@ -252,7 +255,8 @@ DrawTexturedTriangle :: proc(
     x1, y1: i32, z1, w1, u1, v1: f32,
     x2, y2: i32, z2, w2, u2, v2: f32,
     texture: ^Texture,
-    intensity: f32
+    intensity: f32,
+    zBuffer: ^ZBuffer
 ) {
     x0_, y0_, z0_, w0_, u0_, v0_ := x0, y0, z0, w0, u0, v0
     x1_, y1_, z1_, w1_, u1_, v1_ := x1, y1, z1, w1, u1, v1
@@ -305,7 +309,7 @@ DrawTexturedTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity)
+                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity, zBuffer)
             }
         }
     }
@@ -324,7 +328,7 @@ DrawTexturedTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity)
+                DrawTexel(x, y, &pointA, &pointB, &pointC, &uvA, &uvB, &uvC, texture, intensity, zBuffer)
             }
         }
     }
@@ -335,7 +339,8 @@ DrawTexel :: proc(
     pointA, pointB, pointC: ^Vector4,
     uvA, uvB, uvC: ^Vector2,
     texture: ^Texture,
-    intensity: f32
+    intensity: f32,
+    zBuffer: ^ZBuffer
 ) {
     if IsPointOutsideViewport(x,y) {
         return
@@ -357,22 +362,33 @@ DrawTexel :: proc(
 
     interpolatedReciprocalW := (1.0 / pointA.w) * alpha + (1.0 / pointB.w) * beta + (1.0 / pointC.w) * gamma
 
+    if interpolatedReciprocalW == 0.0 {
+        return
+    }
+
     interpolatedU /= interpolatedReciprocalW
     interpolatedV /= interpolatedReciprocalW
 
-    texX := (i32(interpolatedU * f32(texture.width)) % texture.width + texture.width) % texture.width
-    texY := (i32(interpolatedV * f32(texture.height)) % texture.height + texture.height) % texture.height
+    interpolatedReciprocalW = 1.0 - interpolatedReciprocalW
+    zBufferIndex := (SCREEN_WIDTH * y) + x
+    
+    if (interpolatedReciprocalW < zBuffer[zBufferIndex]) {
+        texX := (i32(interpolatedU * f32(texture.width)) % texture.width + texture.width) % texture.width
+        texY := (i32(interpolatedV * f32(texture.height)) % texture.height + texture.height) % texture.height
+    
+        color := texture.pixels[texY * texture.width + texX]
+    
+        shadedColor := rl.Color{
+            u8(f32(color.r) * intensity),
+            u8(f32(color.g) * intensity),
+            u8(f32(color.b) * intensity),
+            color.a
+        }
 
-    color := texture.pixels[texY * texture.width + texX]
+        rl.DrawPixel(x, y, shadedColor)
 
-    shadedColor := rl.Color{
-        u8(f32(color.r) * intensity),
-        u8(f32(color.g) * intensity),
-        u8(f32(color.b) * intensity),
-        color.a
+        zBuffer[zBufferIndex] = interpolatedReciprocalW
     }
-
-    rl.DrawPixel(x, y, shadedColor)
 }
 
 BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {

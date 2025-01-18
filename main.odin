@@ -20,10 +20,12 @@ main :: proc() {
     translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
+    texture := LoadTextureFromFile("assets/uv_checker.png")
+
+    zBuffer := MakeZBuffer(SCREEN_WIDTH, SCREEN_HEIGHT)
+
     renderModesCount :: 6
     renderMode: i8 = renderModesCount - 1
-
-    texture := LoadTextureFromFile("assets/uv_checker.png")
 
     for !rl.WindowShouldClose() {
         
@@ -52,10 +54,11 @@ main :: proc() {
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
+        ClearZBuffer(&zBuffer)
 
         switch renderMode {
-            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture)
-            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture)
+            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture, &zBuffer)
+            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture, &zBuffer)
             case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE)
             case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE)
             case 1: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED)
