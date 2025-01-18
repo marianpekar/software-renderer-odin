@@ -17,7 +17,7 @@ DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Colo
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
-        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+        if (IsFaceOutsideFrustum(&p1, &p2, &p3)) {
             continue
         }
 
@@ -41,7 +41,7 @@ DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color) {
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
-        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+        if (IsFaceOutsideFrustum(&p1, &p2, &p3)) {
             continue
         }
 
@@ -86,7 +86,7 @@ DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, lightDir: Vec
         p2 := ProjectToScreen(&v2)
         p3 := ProjectToScreen(&v3)
 
-        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+        if (IsFaceOutsideFrustum(&p1, &p2, &p3)) {
             continue
         }
 
@@ -137,6 +137,9 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
+                if IsPointOutsideViewport(x,y) {
+                    continue
+                }
                 rl.DrawPixel(x, y, color)
             }
         }
@@ -156,6 +159,9 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
+                if IsPointOutsideViewport(x,y) {
+                    continue
+                }
                 rl.DrawPixel(x, y, color)
             }
         }
@@ -182,7 +188,7 @@ DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
-        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+        if (IsFaceOutsideFrustum(&p1, &p2, &p3)) {
             continue
         }
 
@@ -227,7 +233,7 @@ DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]V
         p2 := ProjectToScreen(v2)
         p3 := ProjectToScreen(v3)
 
-        if (IsFaceOutsideViewport(&p1, &p2, &p3)) {
+        if (IsFaceOutsideFrustum(&p1, &p2, &p3)) {
             continue
         }
 
@@ -331,6 +337,10 @@ DrawTexel :: proc(
     texture: ^Texture,
     intensity: f32
 ) {
+    if IsPointOutsideViewport(x,y) {
+        return
+    }
+
     p := Vector2{f32(x), f32(y)}
     a := Vector2{pointA.x, pointA.y}
     b := Vector2{pointB.x, pointB.y}
@@ -413,7 +423,7 @@ IsBackFace :: proc(v1, v2, v3: ^Vector3) -> bool {
     return Vector3DotProduct(normal, toCamera) >= 0.0 
 }
 
-IsFaceOutsideViewport :: proc(p1, p2, p3: ^Vector4) -> bool {
+IsFaceOutsideFrustum :: proc(p1, p2, p3: ^Vector4) -> bool {
     if (p1.z > -NEAR_PLANE && p2.z > -NEAR_PLANE && p3.z > -NEAR_PLANE) || 
        (p1.z < -FAR_PLANE  && p2.z < -FAR_PLANE  && p3.z < -FAR_PLANE) {
         return true
@@ -430,3 +440,8 @@ IsFaceOutsideViewport :: proc(p1, p2, p3: ^Vector4) -> bool {
 
     return false
 }
+
+IsPointOutsideViewport :: proc(x, y: i32) -> bool {
+    return x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT
+}
+
