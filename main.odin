@@ -8,19 +8,13 @@ main :: proc() {
     rl.SetTargetFPS(60)
 
     cube := MakeCube()
-
-    camera: Camera
-    camera.position = Vector3{0.0, 0.0, -5.0}
-    camera.target = Vector3{0.0, 0.0, 0.0}
-
-    light := Vector3{0.0, -1.0, 0.0}
-    light = Vector3Normalize(light)
+    texture := LoadTextureFromFile("assets/uv_checker.png")
+    camera := MakeCamera({0.0, 0.0, -5.0})
+    light := MakeLight({0.0, -1.0, 0.0})
 
     rotation := Vector3{0.0, 0.0, 0.0}
     translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
-
-    texture := LoadTextureFromFile("assets/uv_checker.png")
 
     zBuffer := MakeZBuffer(SCREEN_WIDTH, SCREEN_HEIGHT)
 

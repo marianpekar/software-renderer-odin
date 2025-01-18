@@ -54,7 +54,7 @@ DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color) {
     }
 }
 
-DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, lightDir: Vector3, baseColor: rl.Color, ambient:f32 = 0.2) {
+DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, light: Light, baseColor: rl.Color, ambient:f32 = 0.2) {
     for tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -71,7 +71,7 @@ DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, lightDir: Vec
             continue
         }
 
-        intensity := Vector3DotProduct(normal, lightDir)
+        intensity := Vector3DotProduct(normal, light)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity, 0.0, 1.0)
 
@@ -203,8 +203,7 @@ DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2
     }
 }
 
-
-DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, lightDir: Vector3, texture: ^Texture, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
+DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, light: Light, texture: ^Texture, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -227,7 +226,7 @@ DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]V
             continue
         }
 
-        intensity := Vector3DotProduct(normal, lightDir)
+        intensity := Vector3DotProduct(normal, light)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity, 0.0, 1.0)
 
@@ -460,4 +459,3 @@ IsFaceOutsideFrustum :: proc(p1, p2, p3: ^Vector4) -> bool {
 IsPointOutsideViewport :: proc(x, y: i32) -> bool {
     return x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT
 }
-
