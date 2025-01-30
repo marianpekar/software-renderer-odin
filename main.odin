@@ -1,22 +1,24 @@
 package main
 
-import "core:math"
 import rl "vendor:raylib"
 
 main :: proc() {
     rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Renderer")
     rl.SetTargetFPS(60)
 
+    zBuffer := MakeZBuffer()
+    defer DeleteZBuffer(zBuffer)
+
     cube := MakeCube()
-    texture := LoadTextureFromFile("assets/uv_checker.png")
+    defer DeleteMesh(&cube)
+
+    texture := LoadTextureFromFile("assets/box.png")
     camera := MakeCamera({0.0, 0.0, -5.0})
     light := MakeLight({0.0, -1.0, 0.0})
 
     rotation := Vector3{0.0, 0.0, 0.0}
     translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
-
-    zBuffer := MakeZBuffer(SCREEN_WIDTH, SCREEN_HEIGHT)
 
     renderModesCount :: 6
     renderMode: i8 = renderModesCount - 1
@@ -48,11 +50,11 @@ main :: proc() {
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
-        ClearZBuffer(&zBuffer)
+        ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture, &zBuffer)
-            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture, &zBuffer)
+            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture, zBuffer)
+            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture, zBuffer)
             case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE)
             case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE)
             case 1: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED)

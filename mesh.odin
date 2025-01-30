@@ -108,3 +108,10 @@ MakeCube :: proc() -> Mesh {
         uvs = uvs,
     }
 }
+
+DeleteMesh :: proc(mesh: ^Mesh) {
+    delete(mesh.transformedVertices)
+    delete(mesh.vertices)
+    delete(mesh.triangles)
+    delete(mesh.uvs)
+}

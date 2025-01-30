@@ -1,6 +1,6 @@
 package main 
 
-ZBuffer :: []f32
+ZBuffer :: [SCREEN_WIDTH * SCREEN_HEIGHT]f32
 
 ClearZBuffer :: proc(zBuffer: ^ZBuffer) {
     for i in 0..<len(zBuffer) {
@@ -8,6 +8,11 @@ ClearZBuffer :: proc(zBuffer: ^ZBuffer) {
     }
 }
 
-MakeZBuffer :: proc(screenWidth, screenHeight: i32) -> ZBuffer {
-    return make([]f32, screenWidth * screenHeight)
+MakeZBuffer :: proc() -> ^ZBuffer {
+    zBuffer := new(ZBuffer)
+    return zBuffer
+}
+
+DeleteZBuffer :: proc(zBuffer: ^ZBuffer) {
+    free(zBuffer)
 }
