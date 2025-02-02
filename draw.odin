@@ -3,7 +3,7 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color, cullBackFace: bool = true) {
+DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Color, cullBackFace: bool = true) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -27,7 +27,7 @@ DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Colo
     }
 }
 
-DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color) {
+DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Color) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -54,7 +54,7 @@ DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, color: rl.Color) {
     }
 }
 
-DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, light: Light, baseColor: rl.Color, ambient:f32 = 0.2) {
+DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, light: Light, baseColor: rl.Color, ambient:f32 = 0.2) {
     for tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -168,7 +168,7 @@ DrawFilledTriangle :: proc(
     }
 }
 
-DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, texture: ^Texture, zBuffer: ^ZBuffer) {
+DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, uvs: ^[]Vector2, texture: ^Texture, zBuffer: ^ZBuffer) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -176,9 +176,9 @@ DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2
         v2 := &vertices[tri[1]]
         v3 := &vertices[tri[2]]
 
-        uv1 := uvs[i*3 + 0]
-        uv2 := uvs[i*3 + 1]
-        uv3 := uvs[i*3 + 2]
+        uv1 := &uvs[tri[3]]
+        uv2 := &uvs[tri[4]]
+        uv3 := &uvs[tri[5]]
 
         if IsBackFace(v1, v2, v3) {
             continue
@@ -203,7 +203,7 @@ DrawTextured :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2
     }
 }
 
-DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]Vector2, light: Light, texture: ^Texture, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
+DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, uvs: ^[]Vector2, light: Light, texture: ^Texture, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
     for i in 0..<len(triangles) {
         tri := triangles[i]
 
@@ -211,9 +211,9 @@ DrawTexturedShaded :: proc(vertices: ^[]Vector3, triangles: ^[][3]int, uvs: ^[]V
         v2 := &vertices[tri[1]]
         v3 := &vertices[tri[2]]
 
-        uv1 := uvs[i*3 + 0]
-        uv2 := uvs[i*3 + 1]
-        uv3 := uvs[i*3 + 2]
+        uv1 := &uvs[tri[3]]
+        uv2 := &uvs[tri[4]]
+        uv3 := &uvs[tri[5]]
 
         edge1 := v2^ - v1^
         edge2 := v3^ - v1^
