@@ -9,7 +9,8 @@ main :: proc() {
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
-    cube := MakeCube()
+    //cube := MakeCube()
+    cube := LoadMeshFromObjFile("assets/cube.obj")
     defer DeleteMesh(&cube)
 
     texture := LoadTextureFromFile("assets/box.png")
