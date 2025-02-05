@@ -10,10 +10,10 @@ main :: proc() {
     defer DeleteZBuffer(zBuffer)
 
     //cube := MakeCube()
-    cube := LoadMeshFromObjFile("assets/cube.obj")
+    cube := LoadMeshFromObjFile("assets/monkey.obj")
     defer DeleteMesh(&cube)
 
-    texture := LoadTextureFromFile("assets/box.png")
+    texture := LoadTextureFromFile("assets/uv_checker.png")
     camera := MakeCamera({0.0, 0.0, -5.0})
     light := MakeLight({0.0, -1.0, 0.0})
 
@@ -56,8 +56,8 @@ main :: proc() {
         switch renderMode {
             case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture, zBuffer)
             case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture, zBuffer)
-            case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE)
-            case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE)
+            case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE, zBuffer)
+            case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE, zBuffer)
             case 1: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED)
             case 0: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED, false)
         }

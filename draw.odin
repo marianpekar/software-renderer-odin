@@ -27,7 +27,7 @@ DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Colo
     }
 }
 
-DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Color) {
+DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Color, zBuffer: ^ZBuffer) {
     for tri in triangles {
         v1 := &vertices[tri[0]]
         v2 := &vertices[tri[1]]
@@ -46,15 +46,16 @@ DrawLit :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Color) {
         }
 
         DrawFilledTriangle(
-            i32(p1.x), i32(p1.y),
-            i32(p2.x), i32(p2.y),
-            i32(p3.x), i32(p3.y),
-            color
+            i32(p1.x), i32(p1.y), p1.z, p1.w,
+            i32(p2.x), i32(p2.y), p2.z, p2.w,
+            i32(p3.x), i32(p3.y), p3.z, p3.w,
+            color,
+            zBuffer
         )
     }
 }
 
-DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, light: Light, baseColor: rl.Color, ambient:f32 = 0.2) {
+DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, light: Light, baseColor: rl.Color, zBuffer: ^ZBuffer, ambient:f32 = 0.2) {
     for tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -91,37 +92,49 @@ DrawFlatShaded :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, light: Light,
         }
 
         DrawFilledTriangle(
-            i32(p1.x), i32(p1.y),
-            i32(p2.x), i32(p2.y),
-            i32(p3.x), i32(p3.y),
-            shadedColor
+            i32(p1.x), i32(p1.y), p1.z, p1.w,
+            i32(p2.x), i32(p2.y), p2.z, p2.w,
+            i32(p3.x), i32(p3.y), p3.z, p3.w,
+            shadedColor,
+            zBuffer
         )
     }
 }
 
 DrawFilledTriangle :: proc(
-    x0: i32, y0: i32,
-    x1: i32, y1: i32,
-    x2: i32, y2: i32,
-    color: rl.Color
+    x0, y0: i32, z0, w0: f32, 
+    x1, y1: i32, z1, w1: f32,
+    x2, y2: i32, z2, w2: f32,
+    color: rl.Color,
+    zBuffer: ^ZBuffer
 ) {
-    x0_, y0_ := x0, y0
-    x1_, y1_ := x1, y1
-    x2_, y2_ := x2, y2
+    x0_, y0_, z0_, w0_:= x0, y0, z0, w0
+    x1_, y1_, z1_, w1_:= x1, y1, z1, w1
+    x2_, y2_, z2_, w2_:= x2, y2, z2, w2
 
     // Sort vertices by y-coordinate (y0 <= y1 <= y2)
     if y0_ > y1_ {
         x0_, x1_ = x1_, x0_
         y0_, y1_ = y1_, y0_
+        z0_, z1_ = z1_, z0_
+        w0_, w1_ = w1_, w0_
     }
     if y1_ > y2_ {
         x1_, x2_ = x2_, x1_
         y1_, y2_ = y2_, y1_
+        z1_, z2_ = z2_, z1_
+        w1_, w2_ = w2_, w1_
     }
     if y0_ > y1_ {
         x0_, x1_ = x1_, x0_
         y0_, y1_ = y1_, y0_
+        z0_, z1_ = z1_, z0_
+        w0_, w1_ = w1_, w0_
     }
+
+    pointA := Vector4{ f32(x0_), f32(y0_), z0_, w0_ }
+    pointB := Vector4{ f32(x1_), f32(y1_), z1_, w1_ }
+    pointC := Vector4{ f32(x2_), f32(y2_), z2_, w2_ }
 
     // Draw flat-bottom triangle
     if y1_ != y0_ {
@@ -137,10 +150,7 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                if IsPointOutsideViewport(x,y) {
-                    continue
-                }
-                rl.DrawPixel(x, y, color)
+                DrawPixel(x, y, &pointA, &pointB, &pointC, color, zBuffer)
             }
         }
     }
@@ -159,10 +169,7 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                if IsPointOutsideViewport(x,y) {
-                    continue
-                }
-                rl.DrawPixel(x, y, color)
+                DrawPixel(x, y, &pointA, &pointB, &pointC, color, zBuffer)
             }
         }
     }
@@ -368,10 +375,10 @@ DrawTexel :: proc(
     interpolatedU /= interpolatedReciprocalW
     interpolatedV /= interpolatedReciprocalW
 
-    interpolatedReciprocalW = 1.0 - interpolatedReciprocalW
+    depth := - (1.0 / interpolatedReciprocalW)
     zBufferIndex := (SCREEN_WIDTH * y) + x
     
-    if (interpolatedReciprocalW < zBuffer[zBufferIndex]) {
+    if (depth < zBuffer[zBufferIndex]) {
         texX := (i32(interpolatedU * f32(texture.width)) % texture.width + texture.width) % texture.width
         texY := (i32(interpolatedV * f32(texture.height)) % texture.height + texture.height) % texture.height
     
@@ -386,7 +393,28 @@ DrawTexel :: proc(
 
         rl.DrawPixel(x, y, shadedColor)
 
-        zBuffer[zBufferIndex] = interpolatedReciprocalW
+        zBuffer[zBufferIndex] = depth
+    }
+}
+
+DrawPixel :: proc(
+    x, y: i32, 
+    pointA, pointB, pointC: ^Vector4,
+    color: rl.Color,
+    zBuffer: ^ZBuffer
+) {
+    if IsPointOutsideViewport(x,y) {
+        return
+    }
+
+    interpolatedReciprocalW := (1.0 / pointA.w) + (1.0 / pointB.w) + (1.0 / pointC.w)
+
+    depth := - (1.0 / interpolatedReciprocalW)
+    zBufferIndex := (SCREEN_WIDTH * y) + x
+    
+    if (depth < zBuffer[zBufferIndex]) {
+        rl.DrawPixel(x, y, color)
+        zBuffer[zBufferIndex] = depth
     }
 }
 
