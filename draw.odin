@@ -21,9 +21,28 @@ DrawWireframe :: proc(vertices: ^[]Vector3, triangles: ^[][6]int, color: rl.Colo
             continue
         }
 
-        rl.DrawLineV({p1.x, p1.y}, {p2.x, p2.y}, color)
-        rl.DrawLineV({p2.x, p2.y}, {p3.x, p3.y}, color)
-        rl.DrawLineV({p3.x, p3.y}, {p1.x, p1.y}, color)
+        DrawLine(i32(p1.x), i32(p1.y), i32(p2.x), i32(p2.y), color)
+        DrawLine(i32(p2.x), i32(p2.y), i32(p3.x), i32(p3.y), color)
+        DrawLine(i32(p3.x), i32(p3.y), i32(p1.x), i32(p1.y), color)
+    }
+}
+
+DrawLine :: proc(x1, y1, x2, y2: i32, color: rl.Color) {
+    dX := f32(x2 - x1)
+    dY := f32(y2 - y1)
+
+    longerDelta := math.abs(dX) >= math.abs(dY) ? math.abs(dX) : math.abs(dY)
+
+    incX := dX / longerDelta
+    incY := dY / longerDelta
+
+    x := f32(x1)
+    y := f32(y1)
+
+    for i := 0; i <= int(longerDelta); i += 1 {
+        rl.DrawPixel(i32(x), i32(y), color)
+        x += incX
+        y += incY
     }
 }
 
