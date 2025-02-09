@@ -9,23 +9,22 @@ main :: proc() {
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
-    //cube := MakeCube()
-    cube := LoadMeshFromObjFile("assets/monkey.obj")
-    defer DeleteMesh(&cube)
+    //mesh := Makemesh()
+    mesh := LoadMeshFromObjFile("assets/monkey.obj")
+    defer DeleteMesh(&mesh)
 
     texture := LoadTextureFromFile("assets/uv_checker.png")
     camera := MakeCamera({0.0, 0.0, -5.0})
-    light := MakeLight({0.0, -1.0, 0.0})
+    light := MakeLight({0.0, 0.0, -5.0}, {0.0, -1.0, 0.0}, 1.0)
 
     rotation := Vector3{0.0, 0.0, 0.0}
     translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
-    renderModesCount :: 6
+    renderModesCount :: 8
     renderMode: i8 = renderModesCount - 1
 
     for !rl.WindowShouldClose() {
-        
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount)
 
         // Translation
@@ -47,19 +46,22 @@ main :: proc() {
         modelMatrix  = Mat4Mul(&scaleMatrix, &modelMatrix)
         finalMatrix := Mat4Mul(&viewMatrix, &modelMatrix)
 
-        TransformVertices(&cube.transformedVertices, &cube.vertices, &finalMatrix)
+        TransformVectors(&mesh.transformedVertices, &mesh.vertices, &finalMatrix)
+        TransformVectors(&mesh.transformedNormals, &mesh.normals, &finalMatrix)
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
         ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 5: DrawTexturedShaded(&cube.transformedVertices, &cube.triangles, &cube.uvs, light, &texture, zBuffer)
-            case 4: DrawTextured(&cube.transformedVertices, &cube.triangles, &cube.uvs, &texture, zBuffer)
-            case 3: DrawFlatShaded(&cube.transformedVertices, &cube.triangles, light, rl.WHITE, zBuffer)
-            case 2: DrawLit(&cube.transformedVertices, &cube.triangles, rl.WHITE, zBuffer)
-            case 1: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED)
-            case 0: DrawWireframe(&cube.transformedVertices, &cube.triangles, rl.RED, false)
+            case 7: DrawTexturedPhongShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, &mesh.transformedNormals, light, &texture, zBuffer)
+            case 6: DrawTexturedFlatShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, light, &texture, zBuffer)
+            case 5: DrawTexturedUnlit(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, &texture, zBuffer)
+            case 4: DrawPhongShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.transformedNormals, light, rl.WHITE, zBuffer)
+            case 3: DrawFlatShaded(&mesh.transformedVertices, &mesh.triangles, light, rl.WHITE, zBuffer)
+            case 2: DrawUnlit(&mesh.transformedVertices, &mesh.triangles, rl.WHITE, zBuffer)
+            case 1: DrawWireframe(&mesh.transformedVertices, &mesh.triangles, rl.RED)
+            case 0: DrawWireframe(&mesh.transformedVertices, &mesh.triangles, rl.RED, false)
         }
 
         rl.EndDrawing()
@@ -68,8 +70,8 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVertices :: proc(transformedVertices, vertices: ^[]Vector3, mat: ^Matrix4x4) {
-    for i in 0..<len(vertices) {
-        transformedVertices[i] = Mat4MulVec3(mat, &vertices[i])
+TransformVectors :: proc(transformedVectors, vectors: ^[]Vector3, mat: ^Matrix4x4) {
+    for i in 0..<len(vectors) {
+        transformedVectors[i] = Mat4MulVec3(mat, &vectors[i])
     }
 }

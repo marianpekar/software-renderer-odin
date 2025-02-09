@@ -1,9 +1,19 @@
 package main
 
-Light :: Vector3
+Light :: struct {
+    position: Vector3,
+    direction: Vector3,
+    strength: f32,
+}
 
-MakeLight :: proc(direction: Vector3) -> Light {
-    light := direction
-    light = Vector3Normalize(light)
-    return light
+MakeLight :: proc(position, direction: Vector3, strength: f32) -> Light {
+    return { 
+        position, 
+        direction, 
+        strength 
+    }
+}
+
+NormalizeLight :: proc(light: ^Light) {
+    light.direction = Vector3Normalize(light.direction)
 }
