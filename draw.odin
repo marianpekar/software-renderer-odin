@@ -119,6 +119,10 @@ DrawFilledTriangle :: proc(
 ) {
     Sort(p1, p2, p3)
 
+    FloorXY(p1)
+    FloorXY(p2)
+    FloorXY(p3)
+
     // Draw flat-bottom triangle
     if p2.y != p1.y {
         invSlope1 := (p2.x - p1.x) / (p2.y - p1.y)
@@ -191,77 +195,48 @@ DrawPhongShaded :: proc(
         }
  
         DrawTrianglePhongShaded(
-            v1, v2, v3, 
-            p1.x, p1.y, p1.z, p1.w, n1,
-            p2.x, p2.y, p2.z, p2.w, n2,
-            p3.x, p3.y, p3.z, p3.w, n3,
+            &v1, &v2, &v3, 
+            &p1, &p2, &p3,
+            &n1, &n2, &n3,
             color, light, ambient, zBuffer
         )
     }
 }
  
 DrawTrianglePhongShaded :: proc(
-    v0, v1, v2: Vector3,
-    x0, y0, z0, w0: f32, n0: Vector3,
-    x1, y1, z1, w1: f32, n1: Vector3,
-    x2, y2, z2, w2: f32, n2: Vector3,
+    v1, v2, v3: ^Vector3,
+    p1, p2, p3: ^Vector4,
+    n1, n2, n3: ^Vector3,
     color: rl.Color,
     light: Light,
     ambient: f32,
     zBuffer: ^ZBuffer
 ) {
-    x0, y0, z0, w0, n0, v0 := x0, y0, z0, w0, n0, v0
-    x1, y1, z1, w1, n1, v1 := x1, y1, z1, w1, n1, v1
-    x2, y2, z2, w2, n2, v2 := x2, y2, z2, w2, n2, v2
- 
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        n0, n1 = n1, n0
-        v0, v1 = v1, v0
-    }
-    if y1 > y2 {
-        x1, x2 = x2, x1
-        y1, y2 = y2, y1
-        z1, z2 = z2, z1
-        w1, w2 = w2, w1
-        n1, n2 = n2, n1
-        v1, v2 = v2, v1
-    }
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        n0, n1 = n1, n0
-        v0, v1 = v1, v0
-    }
- 
-    pA := Vector4{ math.floor(x0), math.floor(y0), z0, w0 }
-    pB := Vector4{ math.floor(x1), math.floor(y1), z1, w1 }
-    pC := Vector4{ math.floor(x2), math.floor(y2), z2, w2 }
- 
+    Sort(p1, p2, p3, v1, v2, v3, n1, n2, n3)
+
+    FloorXY(p1)
+    FloorXY(p2)
+    FloorXY(p3)
+
     // Draw flat-bottom triangle
-    if y1 != y0 {
-        invSlope1 := (x1 - x0) / (y1 - y0)
-        invSlope2 := (x2 - x0) / (y2 - y0)
- 
-        for y := y0; y <= y1; y += 1 {
-            xStart := x0 + (y - y0) * invSlope1
-            xEnd   := x0 + (y - y0) * invSlope2
- 
+    if p2.y != p1.y {
+        invSlope1 := (p2.x - p1.x) / (p2.y - p1.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
+
+        for y := p1.y; y <= p2.y; y += 1 {
+            xStart := p1.x + (y - p1.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
+
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
             }
- 
+
             for x := xStart; x <= xEnd; x += 1 {
                 DrawPixelPhongShaded(
-                    i32(x), i32(y), 
-                    v0, v1, v2, 
-                    n0, n1, n2, 
-                    pA, pB, pC, 
+                    i32(x), i32(y),
+                    v1, v2, v3, 
+                    n1, n2, n3,
+                    p1, p2, p3,
                     color, light, ambient, zBuffer
                 )
             }
@@ -269,24 +244,24 @@ DrawTrianglePhongShaded :: proc(
     }
 
     // Draw flat-top triangle
-    if y2 != y1 {
-        invSlope1 := (x2 - x1) / (y2 - y1)
-        invSlope2 := (x2 - x0) / (y2 - y0)
- 
-        for y := y1; y <= y2; y += 1 {
-            xStart := x1 + (y - y1) * invSlope1
-            xEnd   := x0 + (y - y0) * invSlope2
- 
+    if p3.y != p1.y {
+        invSlope1 := (p3.x - p2.x) / (p3.y - p2.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
+
+        for y := p2.y; y <= p3.y; y += 1 {
+            xStart := p2.x + (y - p2.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
+
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
             }
- 
+
             for x := xStart; x <= xEnd; x += 1 {
                 DrawPixelPhongShaded(
                     i32(x), i32(y),
-                    v0, v1, v2, 
-                    n0, n1, n2,
-                    pA, pB, pC,
+                    v1, v2, v3, 
+                    n1, n2, n3,
+                    p1, p2, p3,
                     color, light, ambient, zBuffer
                 )
             }
@@ -296,9 +271,9 @@ DrawTrianglePhongShaded :: proc(
 
 DrawPixelPhongShaded :: proc(
     x, y: i32,
-    p0, p1, p2: Vector3,
-    n0, n1, n2: Vector3,
-    pointA, pointB, pointC: Vector4,
+    v1, v2, v3: ^Vector3,
+    n1, n2, n3: ^Vector3,
+    p1, p2, p3: ^Vector4,
     color: rl.Color,
     light: Light,
     ambient: f32,
@@ -309,16 +284,16 @@ DrawPixelPhongShaded :: proc(
     }
 
     p := Vector2{ f32(x), f32(y) }
-    a := Vector2{ pointA.x, pointA.y }
-    b := Vector2{ pointB.x, pointB.y }
-    c := Vector2{ pointC.x, pointC.y }
+    a := Vector2{ p1.x, p1.y }
+    b := Vector2{ p2.x, p2.y }
+    c := Vector2{ p3.x, p3.y }
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
     beta  := weights.y
     gamma := weights.z
 
-    denominator := (alpha / pointA.w) + (beta / pointB.w) + (gamma / pointC.w)
+    denominator := (alpha / p1.w) + (beta / p2.w) + (gamma / p3.w)
     if denominator == 0.0 {
         return
     }
@@ -326,9 +301,9 @@ DrawPixelPhongShaded :: proc(
     depth := -(1.0 / denominator)
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpNormal := Vector3Normalize(n0*alpha + n1*beta + n2*gamma)
+        interpNormal := Vector3Normalize(n1^ * alpha + n2^ *beta + n3^ *gamma)
 
-        position := ((p0 * (alpha / pointA.w)) + (p1 * (beta  / pointB.w)) +(p2 * (gamma / pointC.w)) ) / denominator
+        position := ((v1^ * (alpha / p1.w)) + (v2^ * (beta  / p2.w)) + (v3^ * (gamma / p3.w)) ) / denominator
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
@@ -350,7 +325,7 @@ DrawPixelPhongShaded :: proc(
 
 DrawPixel :: proc(
     x, y: i32, 
-    pA, pB, pC: ^Vector4,
+    p1, p2, p3: ^Vector4,
     color: rl.Color,
     zBuffer: ^ZBuffer
 ) {
@@ -358,7 +333,7 @@ DrawPixel :: proc(
         return
     }
 
-    interpolatedReciprocalW := (1.0 / pA.w) + (1.0 / pB.w) + (1.0 / pC.w)
+    interpolatedReciprocalW := (1.0 / p1.w) + (1.0 / p2.w) + (1.0 / p3.w)
 
     depth := - (1.0 / interpolatedReciprocalW)
     zBufferIndex := (SCREEN_WIDTH * y) + x
@@ -429,18 +404,16 @@ DrawTexturedFlatShaded :: proc(
         uv2 := uvs[tri[4]]
         uv3 := uvs[tri[5]]
 
-        edge1 := v2 - v1
-        edge2 := v3 - v1
-    
-        normal := Vector3Normalize(Vector3CrossProduct(edge1, edge2))
+        cross := Vector3CrossProduct(v2 - v1, v3 - v1)
+        crossNorm := Vector3Normalize(cross)
 
         toCamera := Vector3Normalize(v1)
     
-        if (Vector3DotProduct(normal, toCamera) >= 0.0) {
+        if (Vector3DotProduct(crossNorm, toCamera) >= 0.0) {
             continue
         }
 
-        intensity := Vector3DotProduct(normal, light.direction)
+        intensity := Vector3DotProduct(crossNorm, light.direction)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
 
@@ -522,8 +495,8 @@ DrawTexturedTriangleFlatShaded :: proc(
 
 DrawTexelFlatShaded :: proc(
     x, y: i32,
-    pointA, pointB, pointC: ^Vector4,
-    uvA, uvB, uvC: ^Vector2,
+    p1, p2, p3: ^Vector4,
+    uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     intensity: f32,
     zBuffer: ^ZBuffer
@@ -533,9 +506,9 @@ DrawTexelFlatShaded :: proc(
     }
 
     p := Vector2{f32(x), f32(y)}
-    a := Vector2{pointA.x, pointA.y}
-    b := Vector2{pointB.x, pointB.y}
-    c := Vector2{pointC.x, pointC.y}
+    a := Vector2{p1.x, p1.y}
+    b := Vector2{p2.x, p2.y}
+    c := Vector2{p3.x, p3.y}
 
     weights := BarycentricWeights(a, b, c, p)
 
@@ -543,10 +516,10 @@ DrawTexelFlatShaded :: proc(
     beta := weights.y
     gamma := weights.z
 
-    interpolatedU := (uvA.x / pointA.w) * alpha + (uvB.x / pointB.w) * beta + (uvC.x / pointC.w) * gamma
-    interpolatedV := (uvA.y / pointA.w) * alpha + (uvB.y / pointB.w) * beta + (uvC.y / pointC.w) * gamma
+    interpolatedU := (uv1.x / p1.w) * alpha + (uv2.x / p2.w) * beta + (uv3.x / p3.w) * gamma
+    interpolatedV := (uv1.y / p1.w) * alpha + (uv2.y / p2.w) * beta + (uv3.y / p3.w) * gamma
 
-    interpolatedReciprocalW := (1.0 / pointA.w) * alpha + (1.0 / pointB.w) * beta + (1.0 / pointC.w) * gamma
+    interpolatedReciprocalW := (1.0 / p1.w) * alpha + (1.0 / p2.w) * beta + (1.0 / p3.w) * gamma
 
     if interpolatedReciprocalW == 0.0 {
         return
@@ -615,88 +588,51 @@ DrawTexturedPhongShaded :: proc(
         }
  
         DrawTexturedTrianglePhongShaded(
-            v1, v2, v3, 
-            p1.x, p1.y, p1.z, p1.w, uv1.x, uv1.y, n1,
-            p2.x, p2.y, p2.z, p2.w, uv2.x, uv2.y, n2,
-            p3.x, p3.y, p3.z, p3.w, uv3.x, uv3.y, n3,
+            &v1, &v2, &v3, 
+            &p1, &p2, &p3,
+            &uv1, &uv2, &uv3,
+            &n1, &n2, &n3,
             texture, light, ambient, zBuffer
         )
     }
 }
  
 DrawTexturedTrianglePhongShaded :: proc(
-    p0, p1, p2: Vector3,
-    x0, y0, z0, w0, u0, v0: f32, n0: Vector3,
-    x1, y1, z1, w1, u1, v1: f32, n1: Vector3,
-    x2, y2, z2, w2, u2, v2: f32, n2: Vector3,
+    v1, v2, v3: ^Vector3,
+    p1, p2, p3: ^Vector4,
+    uv1, uv2, uv3: ^Vector2,
+    n1, n2, n3: ^Vector3,
     texture: Texture,
     light: Light,
     ambient: f32,
     zBuffer: ^ZBuffer
-) {
-    x0, y0, z0, w0, u0, v0, n0, p0 := x0, y0, z0, w0, u0, v0, n0, p0
-    x1, y1, z1, w1, u1, v1, n1, p1 := x1, y1, z1, w1, u1, v1, n1, p1
-    x2, y2, z2, w2, u2, v2, n2, p2 := x2, y2, z2, w2, u2, v2, n2, p2
- 
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        u0, u1 = u1, u0
-        v0, v1 = v1, v0
-        n0, n1 = n1, n0
-        p0, p1 = p1, p0
-    }
-    if y1 > y2 {
-        x1, x2 = x2, x1
-        y1, y2 = y2, y1
-        z1, z2 = z2, z1
-        w1, w2 = w2, w1
-        u1, u2 = u2, u1
-        v1, v2 = v2, v1
-        n1, n2 = n2, n1
-        p1, p2 = p2, p1
-    }
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        u0, u1 = u1, u0
-        v0, v1 = v1, v0
-        n0, n1 = n1, n0
-        p0, p1 = p1, p0
-    }
- 
-    pA := Vector4{ math.floor(x0), math.floor(y0), z0, w0 }
-    pB := Vector4{ math.floor(x1), math.floor(y1), z1, w1 }
-    pC := Vector4{ math.floor(x2), math.floor(y2), z2, w2 }
- 
-    uvA := Vector2{ u0, v0 }
-    uvB := Vector2{ u1, v1 }
-    uvC := Vector2{ u2, v2 }
- 
+) { 
+    Sort(p1, p2, p3, uv1, uv2, uv3, v1, v2, v3, n1, n2, n3)
+
+    FloorXY(p1)
+    FloorXY(p2)
+    FloorXY(p3)
+
     // Draw flat-bottom triangle
-    if y1 != y0 {
-        invSlope1 := (x1 - x0) / (y1 - y0)
-        invSlope2 := (x2 - x0) / (y2 - y0)
- 
-        for y := y0; y <= y1; y += 1 {
-            xStart := x0 + (y - y0) * invSlope1
-            xEnd   := x0 + (y - y0) * invSlope2
- 
+    if p2.y != p1.y {
+        invSlope1 := (p2.x - p1.x) / (p2.y - p1.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
+
+        for y := p1.y; y <= p2.y; y += 1 {
+            xStart := p1.x + (y - p1.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
+
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
             }
- 
+
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelPhongShaded(
                     i32(x), i32(y), 
-                    p0, p1, p2, 
-                    n0, n1, n2, 
-                    pA, pB, pC, 
-                    uvA, uvB, uvC, 
+                    v1, v2, v3, 
+                    n1, n2, n3, 
+                    p1, p2, p3, 
+                    uv1, uv2, uv3, 
                     texture, light, ambient, zBuffer
                 )
             }
@@ -704,25 +640,25 @@ DrawTexturedTrianglePhongShaded :: proc(
     }
 
     // Draw flat-top triangle
-    if y2 != y1 {
-        invSlope1 := (x2 - x1) / (y2 - y1)
-        invSlope2 := (x2 - x0) / (y2 - y0)
- 
-        for y := y1; y <= y2; y += 1 {
-            xStart := x1 + (y - y1) * invSlope1
-            xEnd   := x0 + (y - y0) * invSlope2
- 
+    if p3.y != p1.y {
+        invSlope1 := (p3.x - p2.x) / (p3.y - p2.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
+
+        for y := p2.y; y <= p3.y; y += 1 {
+            xStart := p2.x + (y - p2.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
+
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
             }
- 
+
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelPhongShaded(
-                    i32(x), i32(y),
-                    p0, p1, p2, 
-                    n0, n1, n2,
-                    pA, pB, pC,
-                    uvA, uvB, uvC, 
+                    i32(x), i32(y), 
+                    v1, v2, v3, 
+                    n1, n2, n3, 
+                    p1, p2, p3, 
+                    uv1, uv2, uv3, 
                     texture, light, ambient, zBuffer
                 )
             }
@@ -732,10 +668,10 @@ DrawTexturedTrianglePhongShaded :: proc(
 
 DrawTexelPhongShaded :: proc(
     x, y: i32,
-    p0, p1, p2: Vector3,
-    n0, n1, n2: Vector3,
-    pointA, pointB, pointC: Vector4,
-    uvA, uvB, uvC: Vector2,
+    v1, v2, v3: ^Vector3,
+    n1, n2, n3: ^Vector3,
+    p1, p2, p3: ^Vector4,
+    uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     light: Light,
     ambient: f32,
@@ -746,16 +682,16 @@ DrawTexelPhongShaded :: proc(
     }
 
     p := Vector2{ f32(x), f32(y) }
-    a := Vector2{ pointA.x, pointA.y }
-    b := Vector2{ pointB.x, pointB.y }
-    c := Vector2{ pointC.x, pointC.y }
+    a := Vector2{ p1.x, p1.y }
+    b := Vector2{ p2.x, p2.y }
+    c := Vector2{ p3.x, p3.y }
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
     beta  := weights.y
     gamma := weights.z
 
-    denominator := (alpha / pointA.w) + (beta / pointB.w) + (gamma / pointC.w)
+    denominator := (alpha / p1.w) + (beta / p2.w) + (gamma / p3.w)
     if denominator == 0.0 {
         return
     }
@@ -763,12 +699,12 @@ DrawTexelPhongShaded :: proc(
     depth := -(1.0 / denominator)
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpU := ((uvA.x/pointA.w)*alpha + (uvB.x/pointB.w)*beta + (uvC.x/pointC.w)*gamma) / denominator
-        interpV := ((uvA.y/pointA.w)*alpha + (uvB.y/pointB.w)*beta + (uvC.y/pointC.w)*gamma) / denominator
+        interpU := ((uv1.x / p1.w) * alpha + (uv2.x / p2.w) * beta + (uv3.x / p3.w)*gamma) / denominator
+        interpV := ((uv1.y / p1.w) * alpha + (uv2.y / p2.w) * beta + (uv3.y / p3.w)*gamma) / denominator
 
-        interpNormal := Vector3Normalize(n0*alpha + n1*beta + n2*gamma)
+        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ *gamma)
 
-        position := ((p0 * (alpha / pointA.w)) + (p1 * (beta  / pointB.w)) +(p2 * (gamma / pointC.w)) ) / denominator
+        position := ((v1^ * (alpha / p1.w)) + (v2^ * (beta  / p2.w)) +(v3^ * (gamma / p3.w))) / denominator
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
@@ -827,59 +763,6 @@ ProjectToScreen :: proc(point: ^Vector3) -> Vector4 {
     screenY := (-projectedY * 0.5 + 0.5) * SCREEN_HEIGHT
 
     return Vector4{screenX, screenY, point.z, point.z}
-}
-
-Sort :: proc{
-    SortPointsAndUVs,
-    SortPoints,
-}
-
-SortPointsAndUVs :: proc(p1, p2, p3: ^Vector4, uv1, uv2, uv3: ^Vector2) {
-    if p1.y > p2.y {
-        p1.x, p2.x = p2.x, p1.x
-        p1.y, p2.y = p2.y, p1.y
-        p1.z, p2.z = p2.z, p1.z
-        p1.w, p2.w = p2.w, p1.w
-        uv1.x, uv2.x = uv2.x, uv1.x
-        uv1.y, uv2.y = uv2.y, uv1.y
-    }
-    if p2.y > p3.y {
-        p2.x, p3.x = p3.x, p2.x
-        p2.y, p3.y = p3.y, p2.y
-        p2.z, p3.z = p3.z, p2.z
-        p2.w, p3.w = p3.w, p2.w
-        uv2.x, uv3.x = uv3.x, uv2.x
-        uv2.y, uv3.y = uv3.y, uv2.y
-    }
-    if p1.y > p2.y {
-        p1.x, p2.x = p2.x, p1.x
-        p1.y, p2.y = p2.y, p1.y
-        p1.z, p2.z = p2.z, p1.z
-        p1.w, p2.w = p2.w, p1.w
-        uv1.x, uv2.x = uv2.x, uv1.x
-        uv1.y, uv2.y = uv2.y, uv1.y
-    }
-}
-
-SortPoints :: proc(p1, p2, p3: ^Vector4) {
-    if p1.y > p2.y {
-        p1.x, p2.x = p2.x, p1.x
-        p1.y, p2.y = p2.y, p1.y
-        p1.z, p2.z = p2.z, p1.z
-        p1.w, p2.w = p2.w, p1.w
-    }
-    if p2.y > p3.y {
-        p2.x, p3.x = p3.x, p2.x
-        p2.y, p3.y = p3.y, p2.y
-        p2.z, p3.z = p3.z, p2.z
-        p2.w, p3.w = p3.w, p2.w
-    }
-    if p1.y > p2.y {
-        p1.x, p2.x = p2.x, p1.x
-        p1.y, p2.y = p2.y, p1.y
-        p1.z, p2.z = p2.z, p1.z
-        p1.w, p2.w = p2.w, p1.w
-    }
 }
 
 IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
