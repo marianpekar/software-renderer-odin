@@ -117,7 +117,7 @@ DrawFilledTriangle :: proc(
     color: rl.Color,
     zBuffer: ^ZBuffer
 ) {
-    SortVertices(p1, p2, p3)
+    Sort(p1, p2, p3)
 
     // Draw flat-bottom triangle
     if p2.y != p1.y {
@@ -400,9 +400,8 @@ DrawTexturedUnlit :: proc(
         }
 
         DrawTexturedTriangleFlatShaded(
-            p1.x, p1.y, p1.z, p1.w, uv1.x, uv1.y,
-            p2.x, p2.y, p2.z, p2.w, uv2.x, uv2.y,
-            p3.x, p3.y, p3.z, p3.w, uv3.x, uv3.y,
+            &p1, &p2, &p3,
+            &uv1, &uv2, &uv3,
             texture, 
             1.0, // Unlit
             zBuffer
@@ -454,9 +453,8 @@ DrawTexturedFlatShaded :: proc(
         }
 
         DrawTexturedTriangleFlatShaded(
-            p1.x, p1.y, p1.z, p1.w, uv1.x, uv1.y,
-            p2.x, p2.y, p2.z, p2.w, uv2.x, uv2.y,
-            p3.x, p3.y, p3.z, p3.w, uv3.x, uv3.y,
+            &p1, &p2, &p3,
+            &uv1, &uv2, &uv3,
             texture,
             intensity,
             zBuffer
@@ -465,58 +463,22 @@ DrawTexturedFlatShaded :: proc(
 }
 
 DrawTexturedTriangleFlatShaded :: proc(
-    x0, y0, z0, w0, u0, v0: f32, 
-    x1, y1, z1, w1, u1, v1: f32,
-    x2, y2, z2, w2, u2, v2: f32,
+    p1, p2, p3: ^Vector4,
+    uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     intensity: f32,
     zBuffer: ^ZBuffer
 ) {
-    x0, y0, z0, w0, u0, v0 := x0, y0, z0, w0, u0, v0
-    x1, y1, z1, w1, u1, v1 := x1, y1, z1, w1, u1, v1
-    x2, y2, z2, w2, u2, v2 := x2, y2, z2, w2, u2, v2
-
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        u0, u1 = u1, u0
-        v0, v1 = v1, v0
-    }
-    if y1 > y2 {
-        x1, x2 = x2, x1
-        y1, y2 = y2, y1
-        z1, z2 = z2, z1
-        w1, w2 = w2, w1
-        u1, u2 = u2, u1
-        v1, v2 = v2, v1
-    }
-    if y0 > y1 {
-        x0, x1 = x1, x0
-        y0, y1 = y1, y0
-        z0, z1 = z1, z0
-        w0, w1 = w1, w0
-        u0, u1 = u1, u0
-        v0, v1 = v1, v0
-    }
-
-    pA := Vector4{ x0, y0, z0, w0 }
-    pB := Vector4{ x1, y1, z1, w1 }
-    pC := Vector4{ x2, y2, z2, w2 }
-
-    uvA := Vector2{ u0, v0 };
-    uvB := Vector2{ u1, v1 };
-    uvC := Vector2{ u2, v2 };
+    Sort(p1, p2, p3, uv1, uv2, uv3)
 
     // Draw flat-bottom triangle
-    if y1 != y0 {
-        invSlope1 := (x1 - x0) / (y1 - y0)
-        invSlope2 := (x2 - x0) / (y2 - y0)
+    if p2.y != p1.y {
+        invSlope1 := (p2.x - p1.x) / (p2.y - p1.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
 
-        for y := y0; y <= y1; y += 1 {
-            xStart := x0 + (y - y0) * invSlope1
-            xEnd := x0 + (y - y0) * invSlope2
+        for y := p1.y; y <= p2.y; y += 1 {
+            xStart := p1.x + (y - p1.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
 
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
@@ -525,8 +487,8 @@ DrawTexturedTriangleFlatShaded :: proc(
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelFlatShaded(
                     i32(x), i32(y), 
-                    pA, pB, pC, 
-                    uvA, uvB, uvC, 
+                    p1, p2, p3, 
+                    uv1, uv2, uv3, 
                     texture, intensity, zBuffer
                 )
             }
@@ -534,13 +496,13 @@ DrawTexturedTriangleFlatShaded :: proc(
     }
 
     // Draw flat-top triangle
-    if y2 != y1 {
-        invSlope1 := (x2 - x1) / (y2 - y1)
-        invSlope2 := (x2 - x0) / (y2 - y0)
+    if p3.y != p1.y {
+        invSlope1 := (p3.x - p2.x) / (p3.y - p2.y)
+        invSlope2 := (p3.x - p1.x) / (p3.y - p1.y)
 
-        for y := y1; y <= y2; y += 1 {
-            xStart := x1 + (y - y1) * invSlope1
-            xEnd := x0 + (y - y0) * invSlope2
+        for y := p2.y; y <= p3.y; y += 1 {
+            xStart := p2.x + (y - p2.y) * invSlope1
+            xEnd := p1.x + (y - p1.y) * invSlope2
 
             if xStart > xEnd {
                 xStart, xEnd = xEnd, xStart
@@ -549,8 +511,8 @@ DrawTexturedTriangleFlatShaded :: proc(
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelFlatShaded(
                     i32(x), i32(y), 
-                    pA, pB, pC, 
-                    uvA, uvB, uvC, 
+                    p1, p2, p3, 
+                    uv1, uv2, uv3, 
                     texture, intensity, zBuffer
                 )
             }
@@ -560,8 +522,8 @@ DrawTexturedTriangleFlatShaded :: proc(
 
 DrawTexelFlatShaded :: proc(
     x, y: i32,
-    pointA, pointB, pointC: Vector4,
-    uvA, uvB, uvC: Vector2,
+    pointA, pointB, pointC: ^Vector4,
+    uvA, uvB, uvC: ^Vector2,
     texture: Texture,
     intensity: f32,
     zBuffer: ^ZBuffer
@@ -867,38 +829,39 @@ ProjectToScreen :: proc(point: ^Vector3) -> Vector4 {
     return Vector4{screenX, screenY, point.z, point.z}
 }
 
-SortVertices :: proc {
-    SortVerticesV2,
-    SortVerticesV3,
-    SortVerticesV4,
+Sort :: proc{
+    SortPointsAndUVs,
+    SortPoints,
 }
 
-SortVerticesV2 :: proc(p1, p2: ^Vector2) {
-    if p1.y > p2.y {
-        p1.x, p2.x = p2.x, p1.x
-        p1.y, p2.y = p2.y, p1.y
-    }
-}
-
-SortVerticesV3 :: proc(p1, p2, p3: ^Vector3) {
+SortPointsAndUVs :: proc(p1, p2, p3: ^Vector4, uv1, uv2, uv3: ^Vector2) {
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
         p1.y, p2.y = p2.y, p1.y
         p1.z, p2.z = p2.z, p1.z
+        p1.w, p2.w = p2.w, p1.w
+        uv1.x, uv2.x = uv2.x, uv1.x
+        uv1.y, uv2.y = uv2.y, uv1.y
     }
     if p2.y > p3.y {
         p2.x, p3.x = p3.x, p2.x
         p2.y, p3.y = p3.y, p2.y
         p2.z, p3.z = p3.z, p2.z
+        p2.w, p3.w = p3.w, p2.w
+        uv2.x, uv3.x = uv3.x, uv2.x
+        uv2.y, uv3.y = uv3.y, uv2.y
     }
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
         p1.y, p2.y = p2.y, p1.y
         p1.z, p2.z = p2.z, p1.z
+        p1.w, p2.w = p2.w, p1.w
+        uv1.x, uv2.x = uv2.x, uv1.x
+        uv1.y, uv2.y = uv2.y, uv1.y
     }
 }
 
-SortVerticesV4 :: proc(p1, p2, p3: ^Vector4) {
+SortPoints :: proc(p1, p2, p3: ^Vector4) {
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
         p1.y, p2.y = p2.y, p1.y
