@@ -433,7 +433,7 @@ DrawTrianglePhongShaded :: proc(
     ambient: f32,
     zBuffer: ^ZBuffer
 ) {
-    Sort(p1, p2, p3, v1, v2, v3, n1, n2, n3)
+    Sort(p1, p2, p3, v1, v2, v3)
 
     FloorXY(p1)
     FloorXY(p2)
@@ -599,7 +599,7 @@ DrawTexturedTrianglePhongShaded :: proc(
     ambient: f32,
     zBuffer: ^ZBuffer
 ) { 
-    Sort(p1, p2, p3, uv1, uv2, uv3, v1, v2, v3, n1, n2, n3)
+    Sort(p1, p2, p3, uv1, uv2, uv3, v1, v2, v3)
 
     FloorXY(p1)
     FloorXY(p2)

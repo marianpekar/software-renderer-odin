@@ -1,17 +1,16 @@
 package main
 
 Sort :: proc {
-    SortPointsUVsVerticesAndNormals,
-    SortPointsVerticesAndNormals,
+    SortPointsUVsAndVertices,
+    SortPointsAndVertices,
     SortPointsAndUVs,
     SortPoints,
 }
 
-SortPointsUVsVerticesAndNormals :: proc(
+SortPointsUVsAndVertices :: proc(
     p1, p2, p3: ^Vector4, 
     uv1, uv2, uv3: ^Vector2,
     v1, v2, v3: ^Vector3,
-    n1, n2, n3: ^Vector3
 ) {
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
@@ -23,9 +22,7 @@ SortPointsUVsVerticesAndNormals :: proc(
         v1.x, v2.x = v2.x, v1.x
         v1.y, v2.y = v2.y, v1.y
         v1.z, v2.z = v2.z, v1.z
-        n1.x, n2.x = n2.x, n1.x
-        n1.y, n2.y = n2.y, n1.y
-        n1.z, n2.z = n2.z, n1.z
+
     }
     if p2.y > p3.y {
         p2.x, p3.x = p3.x, p2.x
@@ -37,9 +34,6 @@ SortPointsUVsVerticesAndNormals :: proc(
         v2.x, v3.x = v3.x, v2.x
         v2.y, v3.y = v3.y, v2.y
         v2.z, v3.z = v3.z, v2.z    
-        n2.x, n3.x = n3.x, n2.x
-        n2.y, n3.y = n3.y, n2.y
-        n2.z, n3.z = n3.z, n2.z  
     }
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
@@ -51,16 +45,12 @@ SortPointsUVsVerticesAndNormals :: proc(
         v1.x, v2.x = v2.x, v1.x
         v1.y, v2.y = v2.y, v1.y
         v1.z, v2.z = v2.z, v1.z
-        n1.x, n2.x = n2.x, n1.x
-        n1.y, n2.y = n2.y, n1.y
-        n1.z, n2.z = n2.z, n1.z
     }
 }
 
-SortPointsVerticesAndNormals :: proc(
+SortPointsAndVertices :: proc(
     p1, p2, p3: ^Vector4, 
     v1, v2, v3: ^Vector3,
-    n1, n2, n3: ^Vector3
 ) {
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
@@ -70,9 +60,6 @@ SortPointsVerticesAndNormals :: proc(
         v1.x, v2.x = v2.x, v1.x
         v1.y, v2.y = v2.y, v1.y
         v1.z, v2.z = v2.z, v1.z
-        n1.x, n2.x = n2.x, n1.x
-        n1.y, n2.y = n2.y, n1.y
-        n1.z, n2.z = n2.z, n1.z
     }
     if p2.y > p3.y {
         p2.x, p3.x = p3.x, p2.x
@@ -82,9 +69,6 @@ SortPointsVerticesAndNormals :: proc(
         v2.x, v3.x = v3.x, v2.x
         v2.y, v3.y = v3.y, v2.y
         v2.z, v3.z = v3.z, v2.z    
-        n2.x, n3.x = n3.x, n2.x
-        n2.y, n3.y = n3.y, n2.y
-        n2.z, n3.z = n3.z, n2.z  
     }
     if p1.y > p2.y {
         p1.x, p2.x = p2.x, p1.x
@@ -94,9 +78,6 @@ SortPointsVerticesAndNormals :: proc(
         v1.x, v2.x = v2.x, v1.x
         v1.y, v2.y = v2.y, v1.y
         v1.z, v2.z = v2.z, v1.z
-        n1.x, n2.x = n2.x, n1.x
-        n1.y, n2.y = n2.y, n1.y
-        n1.z, n2.z = n2.z, n1.z
     }
 }
 
