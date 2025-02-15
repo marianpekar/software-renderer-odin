@@ -341,9 +341,9 @@ DrawTexelFlatShaded :: proc(
     }
 
     p := Vector2{f32(x), f32(y)}
-    a := Vector2{p1.x, p1.y}
-    b := Vector2{p2.x, p2.y}
-    c := Vector2{p3.x, p3.y}
+    a := p1.xy
+    b := p2.xy
+    c := p3.xy
 
     weights := BarycentricWeights(a, b, c, p)
 
@@ -504,10 +504,10 @@ DrawPixelPhongShaded :: proc(
         return
     }
 
-    p := Vector2{ f32(x), f32(y) }
-    a := Vector2{ p1.x, p1.y }
-    b := Vector2{ p2.x, p2.y }
-    c := Vector2{ p3.x, p3.y }
+    p := Vector2{f32(x), f32(y)}
+    a := p1.xy
+    b := p2.xy
+    c := p3.xy
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
@@ -673,10 +673,10 @@ DrawTexelPhongShaded :: proc(
         return
     }
 
-    p := Vector2{ f32(x), f32(y) }
-    a := Vector2{ p1.x, p1.y }
-    b := Vector2{ p2.x, p2.y }
-    c := Vector2{ p3.x, p3.y }
+    p := Vector2{f32(x), f32(y)}
+    a := p1.xy
+    b := p2.xy
+    c := p3.xy
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
