@@ -4,7 +4,7 @@ import "core:math"
 import rl "vendor:raylib"
 
 DrawWireframe :: proc(vertices: []Vector3, triangles: [][9]int, color: rl.Color, cullBackFace: bool = true) {
-    for tri in triangles {
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -47,7 +47,7 @@ DrawLine :: proc(a, b: Vector2, color: rl.Color) {
 }
 
 DrawUnlit :: proc(vertices: []Vector3, triangles: [][9]int, color: rl.Color, zBuffer: ^ZBuffer) {
-    for tri in triangles {
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -76,7 +76,7 @@ DrawFlatShaded :: proc(
     zBuffer: ^ZBuffer, 
     ambient:f32 = 0.2
 ) {
-    for tri in triangles {
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -171,9 +171,7 @@ DrawPhongShaded :: proc(
     zBuffer: ^ZBuffer, 
     ambient: f32 = 0.1
 ) {
-    for i in 0..<len(triangles) {
-        tri := triangles[i]
- 
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -351,9 +349,7 @@ DrawTexturedUnlit :: proc(
     texture: Texture, 
     zBuffer: ^ZBuffer
 ) {
-    for i in 0..<len(triangles) {
-        tri := triangles[i]
-
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -393,9 +389,7 @@ DrawTexturedFlatShaded :: proc(
     zBuffer: ^ZBuffer, 
     ambient:f32 = 0.2
 ) {
-    for i in 0..<len(triangles) {
-        tri := triangles[i]
-
+    for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
@@ -560,9 +554,7 @@ DrawTexturedPhongShaded :: proc(
     zBuffer: ^ZBuffer, 
     ambient: f32 = 0.1
 ) {
-    for i in 0..<len(triangles) {
-        tri := triangles[i]
- 
+    for &tri in triangles { 
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
         v3 := vertices[tri[2]]
