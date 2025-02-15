@@ -4,7 +4,7 @@ import "core:math"
 
 Matrix4x4 :: [4][4]f32
 
-Mat4MulVec3 :: proc(mat: ^Matrix4x4, vec: ^Vector3) -> Vector3 {
+Mat4MulVec3 :: proc(mat: Matrix4x4, vec: Vector3) -> Vector3 {
     x := mat[0][0]*vec.x + mat[1][0]*vec.y + mat[2][0]*vec.z + mat[3][0]
     y := mat[0][1]*vec.x + mat[1][1]*vec.y + mat[2][1]*vec.z + mat[3][1]
     z := mat[0][2]*vec.x + mat[1][2]*vec.y + mat[2][2]*vec.z + mat[3][2]
@@ -17,7 +17,7 @@ Mat4MulVec3 :: proc(mat: ^Matrix4x4, vec: ^Vector3) -> Vector3 {
 }
 
 
-Mat4Mul :: proc(a: ^Matrix4x4, b: ^Matrix4x4) -> Matrix4x4 {
+Mat4Mul :: proc(a, b: Matrix4x4) -> Matrix4x4 {
     result: Matrix4x4
     for i in 0..<4 {
         for j in 0..<4 {

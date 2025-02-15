@@ -40,28 +40,28 @@ main :: proc() {
 
         // Transformations
         viewMatrix  := MakeViewMatrix(camera.position, camera.target)
-        modelMatrix := Mat4Mul(&rotationX, &rotationY)
-        modelMatrix  = Mat4Mul(&modelMatrix, &rotationZ)
-        modelMatrix  = Mat4Mul(&translationMatrix, &modelMatrix)
-        modelMatrix  = Mat4Mul(&scaleMatrix, &modelMatrix)
-        finalMatrix := Mat4Mul(&viewMatrix, &modelMatrix)
+        modelMatrix := Mat4Mul(rotationX, rotationY)
+        modelMatrix  = Mat4Mul(modelMatrix, rotationZ)
+        modelMatrix  = Mat4Mul(translationMatrix, modelMatrix)
+        modelMatrix  = Mat4Mul(scaleMatrix, modelMatrix)
+        finalMatrix := Mat4Mul(viewMatrix, modelMatrix)
 
-        TransformVectors(&mesh.transformedVertices, &mesh.vertices, &finalMatrix)
-        TransformVectors(&mesh.transformedNormals, &mesh.normals, &finalMatrix)
+        TransformVectors(&mesh.transformedVertices, mesh.vertices, finalMatrix)
+        TransformVectors(&mesh.transformedNormals, mesh.normals, finalMatrix)
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
         ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 7: DrawTexturedPhongShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, &mesh.transformedNormals, light, &texture, zBuffer)
-            case 6: DrawTexturedFlatShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, light, &texture, zBuffer)
-            case 5: DrawTexturedUnlit(&mesh.transformedVertices, &mesh.triangles, &mesh.uvs, &texture, zBuffer)
-            case 4: DrawPhongShaded(&mesh.transformedVertices, &mesh.triangles, &mesh.transformedNormals, light, rl.WHITE, zBuffer)
-            case 3: DrawFlatShaded(&mesh.transformedVertices, &mesh.triangles, light, rl.WHITE, zBuffer)
-            case 2: DrawUnlit(&mesh.transformedVertices, &mesh.triangles, rl.WHITE, zBuffer)
-            case 1: DrawWireframe(&mesh.transformedVertices, &mesh.triangles, rl.RED)
-            case 0: DrawWireframe(&mesh.transformedVertices, &mesh.triangles, rl.RED, false)
+            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer)
+            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer)
+            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer)
+            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer)
+            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer)
+            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer)
+            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED)
+            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, false)
         }
 
         rl.EndDrawing()
@@ -70,8 +70,8 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVectors :: proc(transformedVectors, vectors: ^[]Vector3, mat: ^Matrix4x4) {
-    for i in 0..<len(vectors) {
-        transformedVectors[i] = Mat4MulVec3(mat, &vectors[i])
+TransformVectors :: proc(transformedVectors: ^[]Vector3, originalVectors: []Vector3, mat: Matrix4x4) {
+    for i in 0..<len(originalVectors) {
+        transformedVectors[i] = Mat4MulVec3(mat, originalVectors[i])
     }
 }
