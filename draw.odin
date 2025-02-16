@@ -137,7 +137,7 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawPixel(i32(x), i32(y), p1, p2, p3, color, zBuffer)
+                DrawPixel(x, y, p1, p2, p3, color, zBuffer)
             }
         }
     }
@@ -156,18 +156,21 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawPixel(i32(x), i32(y), p1, p2, p3, color, zBuffer)
+                DrawPixel(x, y, p1, p2, p3, color, zBuffer)
             }
         }
     }
 }
 
 DrawPixel :: proc(
-    x, y: i32, 
+    x, y: f32, 
     p1, p2, p3: ^Vector4,
     color: rl.Color,
     zBuffer: ^ZBuffer
 ) {
+    x := i32(x)
+    y := i32(y)
+
     if IsPointOutsideViewport(x,y) {
         return
     }
@@ -294,7 +297,7 @@ DrawTexturedTriangleFlatShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelFlatShaded(
-                    i32(x), i32(y), 
+                    x, y, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
                     texture, intensity, zBuffer
@@ -318,7 +321,7 @@ DrawTexturedTriangleFlatShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelFlatShaded(
-                    i32(x), i32(y), 
+                    x, y,
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
                     texture, intensity, zBuffer
@@ -329,21 +332,24 @@ DrawTexturedTriangleFlatShaded :: proc(
 }
 
 DrawTexelFlatShaded :: proc(
-    x, y: i32,
+    x, y: f32,
     p1, p2, p3: ^Vector4,
     uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     intensity: f32,
     zBuffer: ^ZBuffer
 ) {
-    if IsPointOutsideViewport(x,y) {
-        return
-    }
-
-    p := Vector2{f32(x), f32(y)}
+    p := Vector2{x, y}
     a := p1.xy
     b := p2.xy
     c := p3.xy
+
+    x := i32(x)
+    y := i32(y)
+
+    if IsPointOutsideViewport(x,y) {
+        return
+    }
 
     weights := BarycentricWeights(a, b, c, p)
 
@@ -454,7 +460,7 @@ DrawTrianglePhongShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawPixelPhongShaded(
-                    i32(x), i32(y),
+                    x, y,
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
@@ -479,7 +485,7 @@ DrawTrianglePhongShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawPixelPhongShaded(
-                    i32(x), i32(y),
+                    x, y,
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
@@ -491,7 +497,7 @@ DrawTrianglePhongShaded :: proc(
 }
 
 DrawPixelPhongShaded :: proc(
-    x, y: i32,
+    x, y: f32,
     v1, v2, v3: ^Vector3,
     n1, n2, n3: ^Vector3,
     p1, p2, p3: ^Vector4,
@@ -500,14 +506,17 @@ DrawPixelPhongShaded :: proc(
     ambient: f32,
     zBuffer: ^ZBuffer
 ) {
-    if IsPointOutsideViewport(x, y) {
-        return
-    }
-
-    p := Vector2{f32(x), f32(y)}
+    p := Vector2{x, y}
     a := p1.xy
     b := p2.xy
     c := p3.xy
+
+    x := i32(x)
+    y := i32(y)
+
+    if IsPointOutsideViewport(x, y) {
+        return
+    }
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
@@ -620,7 +629,7 @@ DrawTexturedTrianglePhongShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelPhongShaded(
-                    i32(x), i32(y), 
+                    x, y,
                     v1, v2, v3, 
                     n1, n2, n3, 
                     p1, p2, p3, 
@@ -646,7 +655,7 @@ DrawTexturedTrianglePhongShaded :: proc(
 
             for x := xStart; x <= xEnd; x += 1 {
                 DrawTexelPhongShaded(
-                    i32(x), i32(y), 
+                    x, y,
                     v1, v2, v3, 
                     n1, n2, n3, 
                     p1, p2, p3, 
@@ -659,7 +668,7 @@ DrawTexturedTrianglePhongShaded :: proc(
 }
 
 DrawTexelPhongShaded :: proc(
-    x, y: i32,
+    x, y: f32,
     v1, v2, v3: ^Vector3,
     n1, n2, n3: ^Vector3,
     p1, p2, p3: ^Vector4,
@@ -669,14 +678,17 @@ DrawTexelPhongShaded :: proc(
     ambient: f32,
     zBuffer: ^ZBuffer
 ) {
-    if IsPointOutsideViewport(x, y) {
-        return
-    }
-
-    p := Vector2{f32(x), f32(y)}
+    p := Vector2{x, y}
     a := p1.xy
     b := p2.xy
     c := p3.xy
+
+    x := i32(x)
+    y := i32(y)
+
+    if IsPointOutsideViewport(x, y) {
+        return
+    }
 
     weights := BarycentricWeights(a, b, c, p)
     alpha := weights.x
@@ -715,7 +727,7 @@ DrawTexelPhongShaded :: proc(
             color.a,
         }
 
-        rl.DrawPixel(x, y, shadedColor)
+        rl.DrawPixel(i32(x), i32(y), shadedColor)
         zBuffer[zIndex] = depth
     }
 }
