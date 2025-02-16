@@ -86,7 +86,7 @@ MakeRotationMatrixZ :: proc(angle: f32) -> Matrix4x4 {
 
 MakeViewMatrix :: proc(eye: Vector3, target: Vector3) -> Matrix4x4 {
     forward := Vector3Normalize(eye - target)
-    right   := Vector3Normalize(Vector3CrossProduct(Vector3{0.0, 1.0, 0.0}, forward))
+    right   := Vector3CrossProduct(Vector3{0.0, 1.0, 0.0}, forward)
     up      := Vector3CrossProduct(forward, right)
 
     return Matrix4x4{
