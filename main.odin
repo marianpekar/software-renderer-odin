@@ -25,7 +25,8 @@ main :: proc() {
     renderMode: i8 = renderModesCount - 1
 
     for !rl.WindowShouldClose() {
-        HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount)
+        deltaTime := rl.GetFrameTime()
+        HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
 
         // Translation
         translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
