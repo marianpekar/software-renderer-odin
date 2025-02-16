@@ -5,13 +5,15 @@ import "core:strconv"
 import "core:log"
 import "core:os"
 
+Triangle :: [9]int
+
 Mesh :: struct {
     transformedVertices: []Vector3,
     transformedNormals: []Vector3,
     vertices: []Vector3,
     normals: []Vector3,
     uvs: []Vector2,
-    triangles: []([9]int), 
+    triangles: [](Triangle), 
 }
 
 LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
@@ -23,7 +25,7 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
 
     vertices: [dynamic]Vector3
     normals: [dynamic]Vector3
-    triangles: [dynamic][9]int
+    triangles: [dynamic]Triangle
     uvs: [dynamic]Vector2
 
     it := string(data)
@@ -55,7 +57,7 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
             v1, vt1, vn1 := ParseIndices(split[:], 1)
             v2, vt2, vn2 := ParseIndices(split[:], 2)
             v3, vt3, vn3 := ParseIndices(split[:], 3)
-            append(&triangles, [9]int{v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3})
+            append(&triangles, Triangle{v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3})
         }
     }
 
@@ -71,7 +73,7 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
         triangles = triangles[:]
     } 
 
-    ParseCoord :: proc(split: []string, idx: int) -> f32 {
+    ParseCoord :: proc(split: []string, idx: i32) -> f32 {
         coord, ok := strconv.parse_f32(split[idx])
         if !ok {
             log.panic("Failed to parse coordinate")
@@ -135,26 +137,26 @@ MakeCube :: proc() -> Mesh {
     uvs[4] =  Vector2{1.0, 1.0}
     uvs[5] =  Vector2{1.0, 0.0}
 
-    triangles := make([][9]int, 12)
+    triangles := make([]Triangle, 12)
 
-    // Front               vert.     uvs       norm.
-    triangles[0] =  [9]int{0, 1, 2,  0, 1, 2,  0, 0, 0}
-    triangles[1] =  [9]int{0, 2, 3,  3, 4, 5,  0, 0, 0}
+    // Front                 vert.     uvs       norm.
+    triangles[0] =  Triangle{0, 1, 2,  0, 1, 2,  0, 0, 0}
+    triangles[1] =  Triangle{0, 2, 3,  3, 4, 5,  0, 0, 0}
     // Right
-    triangles[2] =  [9]int{3, 2, 4,  0, 1, 2,  1, 1, 1}
-    triangles[3] =  [9]int{3, 4, 5,  3, 4, 5,  1, 1, 1}
+    triangles[2] =  Triangle{3, 2, 4,  0, 1, 2,  1, 1, 1}
+    triangles[3] =  Triangle{3, 4, 5,  3, 4, 5,  1, 1, 1}
     // Back
-    triangles[4] =  [9]int{5, 4, 6,  0, 1, 2,  2, 2, 2}
-    triangles[5] =  [9]int{5, 6, 7,  3, 4, 5,  2, 2, 2}
+    triangles[4] =  Triangle{5, 4, 6,  0, 1, 2,  2, 2, 2}
+    triangles[5] =  Triangle{5, 6, 7,  3, 4, 5,  2, 2, 2}
     // Left
-    triangles[6] =  [9]int{7, 6, 1,  0, 1, 2,  3, 3, 3}
-    triangles[7] =  [9]int{7, 1, 0,  3, 4, 5,  3, 3, 3}
+    triangles[6] =  Triangle{7, 6, 1,  0, 1, 2,  3, 3, 3}
+    triangles[7] =  Triangle{7, 1, 0,  3, 4, 5,  3, 3, 3}
     // Top
-    triangles[8] =  [9]int{1, 6, 4,  0, 1, 2,  4, 4, 4}
-    triangles[9] =  [9]int{1, 4, 2,  3, 4, 5,  4, 4, 4}
+    triangles[8] =  Triangle{1, 6, 4,  0, 1, 2,  4, 4, 4}
+    triangles[9] =  Triangle{1, 4, 2,  3, 4, 5,  4, 4, 4}
     // Bottom
-    triangles[10] = [9]int{5, 7, 0,  0, 1, 2,  5, 5, 5}
-    triangles[11] = [9]int{5, 0, 3,  3, 4, 5,  5, 5, 5}
+    triangles[10] = Triangle{5, 7, 0,  0, 1, 2,  5, 5, 5}
+    triangles[11] = Triangle{5, 0, 3,  3, 4, 5,  5, 5, 5}
 
     return Mesh{
         transformedVertices = transformedVertices,

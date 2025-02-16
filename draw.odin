@@ -3,7 +3,7 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawWireframe :: proc(vertices: []Vector3, triangles: [][9]int, color: rl.Color, cullBackFace: bool = true) {
+DrawWireframe :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Color, cullBackFace: bool = true) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -46,7 +46,7 @@ DrawLine :: proc(a, b: Vector2, color: rl.Color) {
     }
 }
 
-DrawUnlit :: proc(vertices: []Vector3, triangles: [][9]int, color: rl.Color, zBuffer: ^ZBuffer) {
+DrawUnlit :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Color, zBuffer: ^ZBuffer) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -70,7 +70,7 @@ DrawUnlit :: proc(vertices: []Vector3, triangles: [][9]int, color: rl.Color, zBu
 
 DrawFlatShaded :: proc(
     vertices: []Vector3, 
-    triangles: [][9]int, 
+    triangles: []Triangle, 
     light: Light, 
     baseColor: rl.Color, 
     zBuffer: ^ZBuffer, 
@@ -185,7 +185,7 @@ DrawPixel :: proc(
 
 DrawTexturedUnlit :: proc(
     vertices: []Vector3, 
-    triangles: [][9]int, 
+    triangles: []Triangle, 
     uvs: []Vector2, 
     texture: Texture, 
     zBuffer: ^ZBuffer
@@ -223,7 +223,7 @@ DrawTexturedUnlit :: proc(
 
 DrawTexturedFlatShaded :: proc(
     vertices: []Vector3, 
-    triangles: [][9]int, 
+    triangles: []Triangle, 
     uvs: []Vector2, 
     light: Light, 
     texture: Texture, 
@@ -387,7 +387,7 @@ DrawTexelFlatShaded :: proc(
 
 DrawPhongShaded :: proc(
     vertices: []Vector3, 
-    triangles: [][9]int, 
+    triangles: []Triangle, 
     normals: []Vector3, 
     light: Light, 
     color: rl.Color, 
@@ -546,7 +546,7 @@ DrawPixelPhongShaded :: proc(
 
 DrawTexturedPhongShaded :: proc(
     vertices: []Vector3, 
-    triangles: [][9]int, 
+    triangles: []Triangle, 
     uvs: []Vector2, 
     normals: []Vector3, 
     light: Light, 
