@@ -13,7 +13,7 @@ Mesh :: struct {
     vertices: []Vector3,
     normals: []Vector3,
     uvs: []Vector2,
-    triangles: [](Triangle), 
+    triangles: []Triangle, 
 }
 
 LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
