@@ -282,6 +282,10 @@ DrawTexturedTriangleFlatShaded :: proc(
 ) {
     Sort(p1, p2, p3, uv1, uv2, uv3)
 
+    FloorXY(p1)
+    FloorXY(p2)
+    FloorXY(p3)
+
     // Draw flat-bottom triangle
     if p2.y != p1.y {
         invSlope1 := (p2.x - p1.x) / (p2.y - p1.y)
