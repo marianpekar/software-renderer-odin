@@ -6,6 +6,8 @@ main :: proc() {
     rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Renderer")
     rl.SetTargetFPS(60)
 
+    renderImage := rl.GenImageColor(SCREEN_WIDTH, SCREEN_HEIGHT, rl.LIGHTGRAY)
+    renderTexture := rl.LoadTextureFromImage(renderImage)
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
@@ -55,7 +57,7 @@ main :: proc() {
         ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer)
+            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer, &renderImage)
             case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer)
             case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer)
             case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer)
@@ -65,8 +67,18 @@ main :: proc() {
             case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, false)
         }
 
+        rl.UpdateTexture(renderTexture, renderImage.data)
+        rl.DrawTexture(renderTexture, 0, 0, rl.WHITE)
+	rl.DrawFPS(10, 10)
+
         rl.EndDrawing()
+
+        rl.ImageClearBackground(&renderImage, rl.BLACK)
+
     }
+
+    rl.UnloadTexture(renderTexture)
+    rl.UnloadImage(renderImage)
 
     rl.CloseWindow()
 }
