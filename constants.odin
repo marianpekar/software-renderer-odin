@@ -1,7 +1,5 @@
 package main
 
-import "core:math"
-
 SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 600
 FOV :: 50
