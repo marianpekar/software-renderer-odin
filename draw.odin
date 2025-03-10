@@ -564,7 +564,8 @@ DrawTexturedPhongShaded :: proc(
     normals: []Vector3, 
     light: Light, 
     texture: Texture, 
-    zBuffer: ^ZBuffer, 
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image,
     ambient: f32 = 0.1
 ) {
     for &tri in triangles { 
@@ -597,7 +598,7 @@ DrawTexturedPhongShaded :: proc(
             &p1, &p2, &p3,
             &uv1, &uv2, &uv3,
             &n1, &n2, &n3,
-            texture, light, ambient, zBuffer
+            texture, light, ambient, zBuffer, image
         )
     }
 }
@@ -610,7 +611,8 @@ DrawTexturedTrianglePhongShaded :: proc(
     texture: Texture,
     light: Light,
     ambient: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) { 
     Sort(p1, p2, p3, uv1, uv2, uv3, v1, v2, v3)
 
@@ -638,7 +640,7 @@ DrawTexturedTrianglePhongShaded :: proc(
                     n1, n2, n3, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, light, ambient, zBuffer
+                    texture, light, ambient, zBuffer, image
                 )
             }
         }
@@ -664,7 +666,7 @@ DrawTexturedTrianglePhongShaded :: proc(
                     n1, n2, n3, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, light, ambient, zBuffer
+                    texture, light, ambient, zBuffer, image
                 )
             }
         }
@@ -680,7 +682,8 @@ DrawTexelPhongShaded :: proc(
     texture: Texture,
     light: Light,
     ambient: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     p := Vector2{x, y}
     a := p1.xy
@@ -731,7 +734,15 @@ DrawTexelPhongShaded :: proc(
             color.a,
         }
 
-        rl.DrawPixel(i32(x), i32(y), shadedColor)
+        //rl.DrawPixel(i32(x), i32(y), shadedColor)
+
+        // rl.ImageDrawPixel je rovnako rychle ako priamy zapis do image data
+        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
+
+        // priamy zapis do pamate
+        //index := y * image.width + x
+        //pixels := cast([^]rl.Color) image.data
+        //pixels[index] = shadedColor
         zBuffer[zIndex] = depth
     }
 }
