@@ -3,7 +3,13 @@ package main
 import "core:math"
 import rl "vendor:raylib"
 
-DrawWireframe :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Color, cullBackFace: bool = true) {
+DrawWireframe :: proc(
+    vertices: []Vector3, 
+    triangles: []Triangle, 
+    color: rl.Color,
+    image: ^rl.Image, 
+    cullBackFace: bool = true
+) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -21,13 +27,13 @@ DrawWireframe :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Colo
             continue
         }
 
-        DrawLine({p1.x, p1.y}, {p2.x, p2.y}, color)
-        DrawLine({p2.x, p2.y}, {p3.x, p3.y}, color)
-        DrawLine({p3.x, p3.y}, {p1.x, p1.y}, color)
+        DrawLine({p1.x, p1.y}, {p2.x, p2.y}, color, image)
+        DrawLine({p2.x, p2.y}, {p3.x, p3.y}, color, image)
+        DrawLine({p3.x, p3.y}, {p1.x, p1.y}, color, image)
     }
 }
 
-DrawLine :: proc(a, b: Vector2, color: rl.Color) {
+DrawLine :: proc(a, b: Vector2, color: rl.Color, image: ^rl.Image) {
     dX := b.x - a.x
     dY := b.y - a.y
 
@@ -40,13 +46,19 @@ DrawLine :: proc(a, b: Vector2, color: rl.Color) {
     y := a.y
 
     for i := 0; i <= int(longerDelta); i += 1 {
-        rl.DrawPixel(i32(x), i32(y), color)
+        rl.ImageDrawPixel(image, i32(x), i32(y), color)
         x += incX
         y += incY
     }
 }
 
-DrawUnlit :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Color, zBuffer: ^ZBuffer) {
+DrawUnlit :: proc(
+    vertices: []Vector3, 
+    triangles: []Triangle, 
+    color: rl.Color, 
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
+) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
         v2 := vertices[tri[1]]
@@ -64,7 +76,7 @@ DrawUnlit :: proc(vertices: []Vector3, triangles: []Triangle, color: rl.Color, z
             continue
         }
 
-        DrawFilledTriangle(&p1, &p2, &p3, color, zBuffer)
+        DrawFilledTriangle(&p1, &p2, &p3, color, zBuffer, image)
     }
 }
 
@@ -74,6 +86,7 @@ DrawFlatShaded :: proc(
     light: Light, 
     baseColor: rl.Color, 
     zBuffer: ^ZBuffer, 
+    image: ^rl.Image,
     ambient:f32 = 0.2
 ) {
     for &tri in triangles {
@@ -108,14 +121,15 @@ DrawFlatShaded :: proc(
             continue
         }
 
-        DrawFilledTriangle(&p1, &p2, &p3, shadedColor, zBuffer)
+        DrawFilledTriangle(&p1, &p2, &p3, shadedColor, zBuffer, image)
     }
 }
 
 DrawFilledTriangle :: proc(
     p1, p2, p3: ^Vector3,
     color: rl.Color,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     Sort(p1, p2, p3)
 
@@ -137,7 +151,7 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawPixel(x, y, p1, p2, p3, color, zBuffer)
+                DrawPixel(x, y, p1, p2, p3, color, zBuffer, image)
             }
         }
     }
@@ -156,7 +170,7 @@ DrawFilledTriangle :: proc(
             }
 
             for x := xStart; x <= xEnd; x += 1 {
-                DrawPixel(x, y, p1, p2, p3, color, zBuffer)
+                DrawPixel(x, y, p1, p2, p3, color, zBuffer, image)
             }
         }
     }
@@ -166,7 +180,8 @@ DrawPixel :: proc(
     x, y: f32, 
     p1, p2, p3: ^Vector3,
     color: rl.Color,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     x := i32(x)
     y := i32(y)
@@ -181,7 +196,7 @@ DrawPixel :: proc(
     zBufferIndex := (SCREEN_WIDTH * y) + x
     
     if (depth < zBuffer[zBufferIndex]) {
-        rl.DrawPixel(x, y, color)
+        rl.ImageDrawPixel(image, i32(x), i32(y), color)
         zBuffer[zBufferIndex] = depth
     }
 }
@@ -191,7 +206,8 @@ DrawTexturedUnlit :: proc(
     triangles: []Triangle, 
     uvs: []Vector2, 
     texture: Texture, 
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
@@ -219,7 +235,8 @@ DrawTexturedUnlit :: proc(
             &uv1, &uv2, &uv3,
             texture, 
             1.0, // Unlit
-            zBuffer
+            zBuffer,
+            image
         )
     }
 }
@@ -230,7 +247,8 @@ DrawTexturedFlatShaded :: proc(
     uvs: []Vector2, 
     light: Light, 
     texture: Texture, 
-    zBuffer: ^ZBuffer, 
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image,
     ambient:f32 = 0.2
 ) {
     for &tri in triangles {
@@ -268,7 +286,8 @@ DrawTexturedFlatShaded :: proc(
             &uv1, &uv2, &uv3,
             texture,
             intensity,
-            zBuffer
+            zBuffer,
+            image
         )
     }
 }
@@ -278,7 +297,8 @@ DrawTexturedTriangleFlatShaded :: proc(
     uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     intensity: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     Sort(p1, p2, p3, uv1, uv2, uv3)
 
@@ -304,7 +324,7 @@ DrawTexturedTriangleFlatShaded :: proc(
                     x, y, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, intensity, zBuffer
+                    texture, intensity, zBuffer, image
                 )
             }
         }
@@ -328,7 +348,7 @@ DrawTexturedTriangleFlatShaded :: proc(
                     x, y,
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, intensity, zBuffer
+                    texture, intensity, zBuffer, image
                 )
             }
         }
@@ -341,7 +361,8 @@ DrawTexelFlatShaded :: proc(
     uv1, uv2, uv3: ^Vector2,
     texture: Texture,
     intensity: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     p := Vector2{x, y}
     a := p1.xy
@@ -389,8 +410,7 @@ DrawTexelFlatShaded :: proc(
             color.a
         }
 
-        rl.DrawPixel(x, y, shadedColor)
-
+        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
         zBuffer[zBufferIndex] = depth
     }
 }
@@ -402,6 +422,7 @@ DrawPhongShaded :: proc(
     light: Light, 
     color: rl.Color, 
     zBuffer: ^ZBuffer, 
+    image: ^rl.Image,
     ambient: f32 = 0.1
 ) {
     for &tri in triangles {
@@ -429,7 +450,7 @@ DrawPhongShaded :: proc(
             &v1, &v2, &v3, 
             &p1, &p2, &p3,
             &n1, &n2, &n3,
-            color, light, ambient, zBuffer
+            color, light, ambient, zBuffer, image
         )
     }
 }
@@ -441,7 +462,8 @@ DrawTrianglePhongShaded :: proc(
     color: rl.Color,
     light: Light,
     ambient: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     Sort(p1, p2, p3, v1, v2, v3)
 
@@ -468,7 +490,7 @@ DrawTrianglePhongShaded :: proc(
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
-                    color, light, ambient, zBuffer
+                    color, light, ambient, zBuffer, image
                 )
             }
         }
@@ -493,7 +515,7 @@ DrawTrianglePhongShaded :: proc(
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
-                    color, light, ambient, zBuffer
+                    color, light, ambient, zBuffer, image
                 )
             }
         }
@@ -508,7 +530,8 @@ DrawPixelPhongShaded :: proc(
     color: rl.Color,
     light: Light,
     ambient: f32,
-    zBuffer: ^ZBuffer
+    zBuffer: ^ZBuffer,
+    image: ^rl.Image
 ) {
     p := Vector2{x, y}
     a := p1.xy
@@ -552,7 +575,7 @@ DrawPixelPhongShaded :: proc(
             color.a,
         }
 
-        rl.DrawPixel(x, y, shadedColor)
+        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
         zBuffer[zIndex] = depth
     }
 }
@@ -734,15 +757,7 @@ DrawTexelPhongShaded :: proc(
             color.a,
         }
 
-        //rl.DrawPixel(i32(x), i32(y), shadedColor)
-
-        // rl.ImageDrawPixel je rovnako rychle ako priamy zapis do image data
         rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
-
-        // priamy zapis do pamate
-        //index := y * image.width + x
-        //pixels := cast([^]rl.Color) image.data
-        //pixels[index] = shadedColor
         zBuffer[zIndex] = depth
     }
 }

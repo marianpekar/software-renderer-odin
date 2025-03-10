@@ -7,7 +7,11 @@ main :: proc() {
     rl.SetTargetFPS(60)
 
     renderImage := rl.GenImageColor(SCREEN_WIDTH, SCREEN_HEIGHT, rl.LIGHTGRAY)
+    defer rl.UnloadImage(renderImage)
+    
     renderTexture := rl.LoadTextureFromImage(renderImage)
+    defer rl.UnloadTexture(renderTexture)
+
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
@@ -58,27 +62,24 @@ main :: proc() {
 
         switch renderMode {
             case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer, &renderImage)
-            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer)
-            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer)
-            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer)
-            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer)
-            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer)
-            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED)
-            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, false)
+            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer, &renderImage)
+            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer, &renderImage)
+            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer, &renderImage)
+            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer, &renderImage)
+            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage)
+            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage)
+            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, false)
         }
 
         rl.UpdateTexture(renderTexture, renderImage.data)
         rl.DrawTexture(renderTexture, 0, 0, rl.WHITE)
-	rl.DrawFPS(10, 10)
+	    rl.DrawFPS(10, 10)
 
         rl.EndDrawing()
 
         rl.ImageClearBackground(&renderImage, rl.BLACK)
 
     }
-
-    rl.UnloadTexture(renderTexture)
-    rl.UnloadImage(renderImage)
 
     rl.CloseWindow()
 }
