@@ -46,14 +46,14 @@ main :: proc() {
 
         // Transformations
         viewMatrix  := MakeViewMatrix(camera.position, camera.target)
-        modelMatrix := Mat4Mul(rotationX, rotationY)
-        modelMatrix  = Mat4Mul(modelMatrix, rotationZ)
-        modelMatrix  = Mat4Mul(translationMatrix, modelMatrix)
+        modelMatrix := Mat4Mul(translationMatrix, rotationX)
+        modelMatrix  = Mat4Mul(modelMatrix, rotationY)
+        modelMatrix  = Mat4Mul(rotationZ, modelMatrix)
         modelMatrix  = Mat4Mul(scaleMatrix, modelMatrix)
-        finalMatrix := Mat4Mul(viewMatrix, modelMatrix)
+        modelMatrix  = Mat4Mul(viewMatrix, modelMatrix)
 
-        TransformVectors(&mesh.transformedVertices, mesh.vertices, finalMatrix)
-        TransformVectors(&mesh.transformedNormals, mesh.normals, finalMatrix)
+        TransformVectors(&mesh.transformedVertices, mesh.vertices, modelMatrix)
+        TransformVectors(&mesh.transformedNormals, mesh.normals, modelMatrix)
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.BLACK)
