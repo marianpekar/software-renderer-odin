@@ -382,8 +382,8 @@ DrawTexelFlatShaded :: proc(
     beta := weights.y
     gamma := weights.z
 
-    interpolatedU := (uv1.x / p1.z) * alpha + (uv2.x / p2.z) * beta + (uv3.x / p3.z) * gamma
-    interpolatedV := (uv1.y / p1.z) * alpha + (uv2.y / p2.z) * beta + (uv3.y / p3.z) * gamma
+    interpU := (uv1.x / p1.z) * alpha + (uv2.x / p2.z) * beta + (uv3.x / p3.z) * gamma
+    interpV := (uv1.y / p1.z) * alpha + (uv2.y / p2.z) * beta + (uv3.y / p3.z) * gamma
 
     interpolatedReciprocalZ := (1.0 / p1.z) * alpha + (1.0 / p2.z) * beta + (1.0 / p3.z) * gamma
 
@@ -391,15 +391,15 @@ DrawTexelFlatShaded :: proc(
         return
     }
 
-    interpolatedU /= interpolatedReciprocalZ
-    interpolatedV /= interpolatedReciprocalZ
+    interpU /= interpolatedReciprocalZ
+    interpV /= interpolatedReciprocalZ
 
     depth := - (1.0 / interpolatedReciprocalZ)
     zBufferIndex := (SCREEN_WIDTH * y) + x
     
     if (depth < zBuffer[zBufferIndex]) {
-        texX := (i32(interpolatedU * f32(texture.width)) % texture.width + texture.width) % texture.width
-        texY := (i32(interpolatedV * f32(texture.height)) % texture.height + texture.height) % texture.height
+        texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
+        texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
     
         color := texture.pixels[texY * texture.width + texX]
     
@@ -751,8 +751,8 @@ DrawTexelPhongShaded :: proc(
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
 
-        texX := (i32(interpU * f32(texture.width))  % texture.width  + texture.width ) % texture.width
-        texY := (i32(interpV * f32(texture.height)) % texture.height + texture.height) % texture.height
+        texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
+        texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
         color := texture.pixels[texY * texture.width + texX]
 
         shadedColor := rl.Color{
