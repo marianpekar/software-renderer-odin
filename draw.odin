@@ -549,18 +549,21 @@ DrawPixelPhongShaded :: proc(
     alpha := weights.x
     beta  := weights.y
     gamma := weights.z
+    
+    p1zR := 1.0 / p1.z
+    p2zR := 1.0 / p2.z
+    p3zR := 1.0 / p3.z
 
-    denominator := (alpha / p1.z) + (beta / p2.z) + (gamma / p3.z)
-    if denominator == 0.0 {
-        return
-    }
+    denominator := (alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)
+    denominatorR := 1.0 / denominator
 
-    depth := -(1.0 / denominator)
+    depth := -1.0 * denominatorR
+
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpNormal := Vector3Normalize(n1^ * alpha + n2^ *beta + n3^ *gamma)
+        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
 
-        position := ((v1^ * (alpha / p1.z)) + (v2^ * (beta  / p2.z)) + (v3^ * (gamma / p3.z)) ) / denominator
+        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * denominatorR
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
@@ -725,20 +728,22 @@ DrawTexelPhongShaded :: proc(
     beta  := weights.y
     gamma := weights.z
 
-    denominator := (alpha / p1.z) + (beta / p2.z) + (gamma / p3.z)
-    if denominator == 0.0 {
-        return
-    }
+    p1zR := 1.0 / p1.z
+    p2zR := 1.0 / p2.z
+    p3zR := 1.0 / p3.z
 
-    depth := -(1.0 / denominator)
+    denominator := (alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)
+    denominatorR := 1.0 / denominator
+
+    depth := -1.0 * denominatorR
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpU := ((uv1.x / p1.z) * alpha + (uv2.x / p2.z) * beta + (uv3.x / p3.z)*gamma) / denominator
-        interpV := ((uv1.y / p1.z) * alpha + (uv2.y / p2.z) * beta + (uv3.y / p3.z)*gamma) / denominator
+        interpU := ((uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma) * denominatorR
+        interpV := ((uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma) * denominatorR
 
-        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ *gamma)
+        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
 
-        position := ((v1^ * (alpha / p1.z)) + (v2^ * (beta  / p2.z)) +(v3^ * (gamma / p3.z))) / denominator
+        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * denominatorR
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
