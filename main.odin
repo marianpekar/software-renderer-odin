@@ -4,7 +4,6 @@ import rl "vendor:raylib"
 
 main :: proc() {
     rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Renderer")
-    rl.SetTargetFPS(60)
 
     renderImage := rl.GenImageColor(SCREEN_WIDTH, SCREEN_HEIGHT, rl.LIGHTGRAY)
     defer rl.UnloadImage(renderImage)
