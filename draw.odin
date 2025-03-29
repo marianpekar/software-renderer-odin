@@ -788,8 +788,7 @@ BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
 }
 
 ProjectToScreen :: proc(point: ^Vector3) -> Vector3 {
-    fovRad := math.to_radians_f32(FOV)
-    f := 1.0 / math.tan_f32(fovRad / 2.0)
+    f := 1.0 / math.tan_f32(FOV_RAD / 2.0)
     
     if point.z == 0.0 {
         point.z = 0.0001
