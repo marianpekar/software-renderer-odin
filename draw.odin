@@ -563,7 +563,7 @@ DrawPixelPhongShaded :: proc(
         position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * -depth
 
         lightVec := Vector3Normalize(light.position - position)
-        diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
+        diffuse := Vector3DotProduct(interpNormal, lightVec)
 
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
@@ -741,7 +741,7 @@ DrawTexelPhongShaded :: proc(
         position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * -depth
 
         lightVec := Vector3Normalize(light.position - position)
-        diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
+        diffuse := Vector3DotProduct(interpNormal, lightVec)
 
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
