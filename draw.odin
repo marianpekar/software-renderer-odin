@@ -382,21 +382,20 @@ DrawTexelFlatShaded :: proc(
     beta := weights.y
     gamma := weights.z
 
-    interpU := (uv1.x / p1.z) * alpha + (uv2.x / p2.z) * beta + (uv3.x / p3.z) * gamma
-    interpV := (uv1.y / p1.z) * alpha + (uv2.y / p2.z) * beta + (uv3.y / p3.z) * gamma
+    p1zR := 1.0 / p1.z
+    p2zR := 1.0 / p2.z
+    p3zR := 1.0 / p3.z
 
-    interpolatedReciprocalZ := (1.0 / p1.z) * alpha + (1.0 / p2.z) * beta + (1.0 / p3.z) * gamma
+    interpU := (uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma
+    interpV := (uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma
 
-    if interpolatedReciprocalZ == 0.0 {
-        return
-    }
+    interpolatedReciprocalZ := 1.0 / (p1zR * alpha + p2zR * beta + p3zR * gamma)
 
-    interpU /= interpolatedReciprocalZ
-    interpV /= interpolatedReciprocalZ
+    interpU *= interpolatedReciprocalZ
+    interpV *= interpolatedReciprocalZ
 
-    depth := - (1.0 / interpolatedReciprocalZ)
+    depth := -interpolatedReciprocalZ
     zBufferIndex := (SCREEN_WIDTH * y) + x
-    
     if (depth < zBuffer[zBufferIndex]) {
         texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
