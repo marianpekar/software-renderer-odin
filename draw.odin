@@ -816,8 +816,8 @@ IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
 }
 
 IsFaceOutsideFrustum :: proc(p1, p2, p3: Vector3) -> bool {
-    if (p1.z > -NEAR_PLANE && p2.z > -NEAR_PLANE && p3.z > -NEAR_PLANE) || 
-       (p1.z < -FAR_PLANE  && p2.z < -FAR_PLANE  && p3.z < -FAR_PLANE) {
+    if (p1.z > -NEAR_PLANE || p2.z > -NEAR_PLANE || p3.z > -NEAR_PLANE) || 
+       (p1.z < -FAR_PLANE  || p2.z < -FAR_PLANE  || p3.z < -FAR_PLANE) {
         return true
     }
 
