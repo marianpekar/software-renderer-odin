@@ -9,15 +9,15 @@ HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^
     if rl.IsKeyDown(rl.KeyboardKey.S) do translation.z -= step
     if rl.IsKeyDown(rl.KeyboardKey.A) do translation.x -= step
     if rl.IsKeyDown(rl.KeyboardKey.D) do translation.x += step
-    if rl.IsKeyDown(rl.KeyboardKey.Q) do translation.y += step
     if rl.IsKeyDown(rl.KeyboardKey.E) do translation.y -= step
+    if rl.IsKeyDown(rl.KeyboardKey.Q) do translation.y += step
 
-    if rl.IsKeyDown(rl.KeyboardKey.I) do rotation.x += step
-    if rl.IsKeyDown(rl.KeyboardKey.K) do rotation.x -= step
+    if rl.IsKeyDown(rl.KeyboardKey.I) do rotation.x -= step
+    if rl.IsKeyDown(rl.KeyboardKey.K) do rotation.x += step
     if rl.IsKeyDown(rl.KeyboardKey.J) do rotation.y -= step
     if rl.IsKeyDown(rl.KeyboardKey.L) do rotation.y += step
-    if rl.IsKeyDown(rl.KeyboardKey.U) do rotation.z += step 
     if rl.IsKeyDown(rl.KeyboardKey.O) do rotation.z -= step
+    if rl.IsKeyDown(rl.KeyboardKey.U) do rotation.z += step 
 
     if rl.IsKeyDown(rl.KeyboardKey.KP_ADD) do scale^ += step
     if rl.IsKeyDown(rl.KeyboardKey.KP_SUBTRACT) do scale^ -= step

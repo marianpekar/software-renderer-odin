@@ -33,30 +33,29 @@ main :: proc() {
         deltaTime := rl.GetFrameTime()
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
 
-        // Translation
-        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
-
         // Rotation
         rotationX := MakeRotationMatrixX(rotation.x)
         rotationY := MakeRotationMatrixY(rotation.y)
         rotationZ := MakeRotationMatrixZ(rotation.z)
+        rotationXYZ := Mat4Mul(rotationZ, Mat4Mul(rotationY, rotationX))
 
         // Scale
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
 
-        // Transformations
-        viewMatrix  := MakeViewMatrix(camera.position, camera.target)
-        modelMatrix := Mat4Mul(translationMatrix, rotationX)
-        modelMatrix  = Mat4Mul(modelMatrix, rotationY)
-        modelMatrix  = Mat4Mul(rotationZ, modelMatrix)
-        modelMatrix  = Mat4Mul(scaleMatrix, modelMatrix)
-        modelMatrix  = Mat4Mul(viewMatrix, modelMatrix)
+        // Translation
+        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
 
-        TransformVectors(&mesh.transformedVertices, mesh.vertices, modelMatrix)
-        TransformVectors(&mesh.transformedNormals, mesh.normals, modelMatrix)
+        // Apply Transformations
+        modelMatrix := Mat4Mul(translationMatrix, Mat4Mul(rotationXYZ, scaleMatrix))
+
+        viewMatrix  := MakeViewMatrix(camera.position, camera.target)
+        viewMatrix  = Mat4Mul(viewMatrix, modelMatrix)
+
+        TransformVectors(&mesh.transformedVertices, mesh.vertices, viewMatrix)
+        TransformVectors(&mesh.transformedNormals, mesh.normals, viewMatrix)
 
         rl.BeginDrawing()
-        rl.ClearBackground(rl.BLACK)
+
         ClearZBuffer(zBuffer)
 
         switch renderMode {
@@ -77,7 +76,6 @@ main :: proc() {
         rl.EndDrawing()
 
         rl.ImageClearBackground(&renderImage, rl.BLACK)
-
     }
 
     rl.CloseWindow()
