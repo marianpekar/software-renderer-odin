@@ -553,7 +553,7 @@ DrawPixelPhongShaded :: proc(
     p2zR := 1.0 / p2.z
     p3zR := 1.0 / p3.z
 
-    depth := -(1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)))
+    depth := -1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR))
 
     zIndex := (SCREEN_WIDTH * y) + x
 
@@ -729,7 +729,7 @@ DrawTexelPhongShaded :: proc(
     p2zR := 1.0 / p2.z
     p3zR := 1.0 / p3.z
 
-    depth := -(1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)))
+    depth := -1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR))
 
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
