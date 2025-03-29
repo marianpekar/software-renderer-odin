@@ -556,7 +556,7 @@ DrawPixelPhongShaded :: proc(
     depth := -(1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)))
 
     zIndex := (SCREEN_WIDTH * y) + x
-    
+
     if depth < zBuffer[zIndex] {
         interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
 
@@ -729,18 +729,16 @@ DrawTexelPhongShaded :: proc(
     p2zR := 1.0 / p2.z
     p3zR := 1.0 / p3.z
 
-    denominator := (alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)
-    denominatorR := 1.0 / denominator
+    depth := -(1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR)))
 
-    depth := -1.0 * denominatorR
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpU := ((uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma) * denominatorR
-        interpV := ((uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma) * denominatorR
+        interpU := ((uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma) * -depth
+        interpV := ((uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma) * -depth
 
         interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
 
-        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * denominatorR
+        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * -depth
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := math.clamp(Vector3DotProduct(interpNormal, lightVec), 0.0, 1.0)
