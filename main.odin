@@ -50,9 +50,9 @@ main :: proc() {
 
         viewMatrix  := MakeViewMatrix(camera.position, camera.target)
         viewMatrix  = Mat4Mul(viewMatrix, modelMatrix)
-
-        TransformVectors(&mesh.transformedVertices, mesh.vertices, viewMatrix)
-        TransformVectors(&mesh.transformedNormals, mesh.normals, viewMatrix)
+        
+        ApplyTransformations(&mesh.transformedVertices, mesh.vertices, viewMatrix)
+        ApplyTransformations(&mesh.transformedNormals, mesh.normals, viewMatrix)
 
         rl.BeginDrawing()
 
@@ -81,8 +81,8 @@ main :: proc() {
     rl.CloseWindow()
 }
 
-TransformVectors :: proc(transformedVectors: ^[]Vector3, originalVectors: []Vector3, mat: Matrix4x4) {
-    for i in 0..<len(originalVectors) {
-        transformedVectors[i] = Mat4MulVec3(mat, originalVectors[i])
+ApplyTransformations :: proc(transformed: ^[]Vector3, original: []Vector3, mat: Matrix4x4) {
+    for i in 0..<len(original) {
+        transformed[i] = Mat4MulVec3(mat, original[i])
     }
 }
