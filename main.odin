@@ -29,6 +29,8 @@ main :: proc() {
     renderModesCount :: 8
     renderMode: i8 = renderModesCount - 1
 
+    projMatrix := MakeProjectionMatrix(FOV_RAD, ASPECT, NEAR_PLANE, FAR_PLANE)
+
     for !rl.WindowShouldClose() {
         deltaTime := rl.GetFrameTime()
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
@@ -59,14 +61,14 @@ main :: proc() {
         ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer, &renderImage)
-            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer, &renderImage)
-            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer, &renderImage)
-            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer, &renderImage)
-            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer, &renderImage)
-            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage)
-            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage)
-            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, false)
+            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer, &renderImage, projMatrix)
+            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer, &renderImage, projMatrix)
+            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer, &renderImage, projMatrix)
+            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer, &renderImage, projMatrix)
+            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer, &renderImage, projMatrix)
+            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage, projMatrix)
+            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, projMatrix)
+            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, projMatrix, false)
         }
 
         rl.UpdateTexture(renderTexture, renderImage.data)

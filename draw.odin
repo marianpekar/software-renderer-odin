@@ -8,6 +8,7 @@ DrawWireframe :: proc(
     triangles: []Triangle, 
     color: rl.Color,
     image: ^rl.Image, 
+    projMat: Matrix4x4,
     cullBackFace: bool = true
 ) {
     for &tri in triangles {
@@ -19,9 +20,9 @@ DrawWireframe :: proc(
             continue
         }
 
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
 
         if (IsFaceOutsideFrustum(p1, p2, p3)) {
             continue
@@ -57,7 +58,8 @@ DrawUnlit :: proc(
     triangles: []Triangle, 
     color: rl.Color, 
     zBuffer: ^ZBuffer,
-    image: ^rl.Image
+    image: ^rl.Image,
+    projMat: Matrix4x4,
 ) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
@@ -68,9 +70,9 @@ DrawUnlit :: proc(
             continue
         }
 
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
 
         if IsFaceOutsideFrustum(p1, p2, p3) {
             continue
@@ -87,6 +89,7 @@ DrawFlatShaded :: proc(
     baseColor: rl.Color, 
     zBuffer: ^ZBuffer, 
     image: ^rl.Image,
+    projMat: Matrix4x4,
     ambient:f32 = 0.2
 ) {
     for &tri in triangles {
@@ -113,9 +116,9 @@ DrawFlatShaded :: proc(
             baseColor.a
         }
 
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
 
         if IsFaceOutsideFrustum(p1, p2, p3) {
             continue
@@ -207,7 +210,8 @@ DrawTexturedUnlit :: proc(
     uvs: []Vector2, 
     texture: Texture, 
     zBuffer: ^ZBuffer,
-    image: ^rl.Image
+    image: ^rl.Image,
+    projMat: Matrix4x4,
 ) {
     for &tri in triangles {
         v1 := vertices[tri[0]]
@@ -222,9 +226,9 @@ DrawTexturedUnlit :: proc(
             continue
         }
 
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
 
         if (IsFaceOutsideFrustum(p1, p2, p3)) {
             continue
@@ -249,6 +253,7 @@ DrawTexturedFlatShaded :: proc(
     texture: Texture, 
     zBuffer: ^ZBuffer,
     image: ^rl.Image,
+    projMat: Matrix4x4,
     ambient:f32 = 0.2
 ) {
     for &tri in triangles {
@@ -273,9 +278,9 @@ DrawTexturedFlatShaded :: proc(
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
 
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
 
         if (IsFaceOutsideFrustum(p1, p2, p3)) {
             continue
@@ -422,6 +427,7 @@ DrawPhongShaded :: proc(
     color: rl.Color, 
     zBuffer: ^ZBuffer, 
     image: ^rl.Image,
+    projMat: Matrix4x4,
     ambient: f32 = 0.1
 ) {
     for &tri in triangles {
@@ -437,9 +443,9 @@ DrawPhongShaded :: proc(
             continue
         }
  
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
  
         if IsFaceOutsideFrustum(p1, p2, p3) {
             continue
@@ -589,6 +595,7 @@ DrawTexturedPhongShaded :: proc(
     texture: Texture, 
     zBuffer: ^ZBuffer,
     image: ^rl.Image,
+    projMat: Matrix4x4,
     ambient: f32 = 0.1
 ) {
     for &tri in triangles { 
@@ -608,9 +615,9 @@ DrawTexturedPhongShaded :: proc(
             continue
         }
  
-        p1 := ProjectToScreen(&v1)
-        p2 := ProjectToScreen(&v2)
-        p3 := ProjectToScreen(&v3)
+        p1 := ProjectToScreen(projMat, v1)
+        p2 := ProjectToScreen(projMat, v2)
+        p3 := ProjectToScreen(projMat, v3)
  
         if IsFaceOutsideFrustum(p1, p2, p3) {
             continue
@@ -782,20 +789,20 @@ BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
     return Vector3{alpha, beta, gamma}
 }
 
-ProjectToScreen :: proc(point: ^Vector3) -> Vector3 {
-    f := 1.0 / math.tan_f32(FOV_RAD / 2.0)
-    
-    if point.z == 0.0 {
-        point.z = 0.0001
+ProjectToScreen :: proc(mat: Matrix4x4, p: Vector3) -> Vector3 {
+    clip := Mat4MulVec4(mat, Vector4{p.x, p.y, p.z, 1.0})
+
+    if clip.w <= 0.0 {
+        return Vector3{math.INF_F32, math.INF_F32, math.INF_F32}
     }
 
-    projectedX := (point.x * (f / ASPECT)) / point.z
-    projectedY := (point.y * f) / point.z
+    ndcX := clip.x / clip.w
+    ndcY := clip.y / clip.w
 
-    screenX := (projectedX * 0.5 + 0.5) * SCREEN_WIDTH
-    screenY := (-projectedY * 0.5 + 0.5) * SCREEN_HEIGHT
+    screenX := (ndcX  * 0.5 + 0.5) * SCREEN_WIDTH
+    screenY := (-ndcY * 0.5 + 0.5) * SCREEN_HEIGHT
 
-    return Vector3{screenX, screenY, point.z}
+    return Vector3{screenX, screenY, p.z}
 }
 
 IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {

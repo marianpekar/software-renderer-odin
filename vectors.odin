@@ -4,6 +4,7 @@ import "core:math"
 
 Vector2 :: [2]f32
 Vector3 :: [3]f32
+Vector4 :: [4]f32
 
 Vector3Normalize :: proc(v: Vector3) -> Vector3 {
     length_sq := v[0]*v[0] + v[1]*v[1] + v[2]*v[2];

@@ -12,6 +12,15 @@ Mat4MulVec3 :: proc(mat: Matrix4x4, vec: Vector3) -> Vector3 {
     return Vector3{x, y, z}
 }
 
+Mat4MulVec4 :: proc(mat: Matrix4x4, vec: Vector4) -> Vector4 {
+    x := mat[0][0]*vec.x + mat[0][1]*vec.y + mat[0][2]*vec.z + mat[0][3]*vec.w
+    y := mat[1][0]*vec.x + mat[1][1]*vec.y + mat[1][2]*vec.z + mat[1][3]*vec.w
+    z := mat[2][0]*vec.x + mat[2][1]*vec.y + mat[2][2]*vec.z + mat[2][3]*vec.w
+    w := mat[3][0]*vec.x + mat[3][1]*vec.y + mat[3][2]*vec.z + mat[3][3]*vec.w
+
+    return Vector4{x, y, z, w}
+}
+
 Mat4Mul :: proc(a, b: Matrix4x4) -> Matrix4x4 {
     result: Matrix4x4
     for i in 0..<4 {
@@ -89,5 +98,16 @@ MakeViewMatrix :: proc(eye: Vector3, target: Vector3) -> Matrix4x4 {
         {      up.x,      up.y,      up.z,  -Vector3DotProduct(up, eye)},
         { forward.x, forward.y, forward.z,  -Vector3DotProduct(forward, eye)},
         {       0.0,       0.0,       0.0,   1.0}
+    }
+}
+
+MakeProjectionMatrix :: proc(fov: f32, aspect: f32, near: f32, far: f32) -> Matrix4x4 {
+    f := 1.0 / math.tan_f32(fov * 0.5)
+
+    return Matrix4x4{
+        { f / aspect, 0.0,                        0.0,  0.0},
+        {        0.0,   f,                        0.0,  0.0},
+        {        0.0, 0.0,        -far / (far - near), -1.0},
+        {        0.0, 0.0, -far * near / (far - near),  0.0},
     }
 }
