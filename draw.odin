@@ -193,11 +193,9 @@ DrawPixel :: proc(
         return
     }
 
-    interpolatedReciprocalZ := (1.0 / p1.z) + (1.0 / p2.z) + (1.0 / p3.z)
-
-    depth := - (1.0 / interpolatedReciprocalZ)
+    depth := (p1.z + p2.z + p3.z) * (1.0/3.0)
     zBufferIndex := (SCREEN_WIDTH * y) + x
-    
+
     if (depth < zBuffer[zBufferIndex]) {
         rl.ImageDrawPixel(image, i32(x), i32(y), color)
         zBuffer[zBufferIndex] = depth
@@ -399,8 +397,9 @@ DrawTexelFlatShaded :: proc(
     interpU *= interpolatedReciprocalZ
     interpV *= interpolatedReciprocalZ
 
-    depth := -interpolatedReciprocalZ
+    depth := (p1.z + p2.z + p3.z) * (1.0/3.0)
     zBufferIndex := (SCREEN_WIDTH * y) + x
+    
     if (depth < zBuffer[zBufferIndex]) {
         texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
@@ -555,22 +554,27 @@ DrawPixelPhongShaded :: proc(
     beta  := weights.y
     gamma := weights.z
     
-    p1zR := 1.0 / p1.z
-    p2zR := 1.0 / p2.z
-    p3zR := 1.0 / p3.z
+    w1 := -1.0 / p1.z
+    w2 := -1.0 / p2.z
+    w3 := -1.0 / p3.z
 
-    depth := -1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR))
+    alphaP := alpha * w1
+    betaP  := beta * w2
+    gammaP := gamma * w3
+    invSum := 1.0 / (alphaP + betaP + gammaP)
 
     zIndex := (SCREEN_WIDTH * y) + x
+    depth := -invSum 
 
     if depth < zBuffer[zIndex] {
-        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
+        alphaC := alphaP * invSum
+        betaC  := betaP * invSum
+        gammaC := gammaP * invSum
 
-        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * -depth
-
+        interpNormal := Vector3Normalize(n1^ * alphaC + n2^ * betaC + n3^ * gammaC)
+        position := v1^ * alphaC + v2^ * betaC + v3^ * gammaC 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
-
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
 
@@ -732,21 +736,27 @@ DrawTexelPhongShaded :: proc(
     beta  := weights.y
     gamma := weights.z
 
-    p1zR := 1.0 / p1.z
-    p2zR := 1.0 / p2.z
-    p3zR := 1.0 / p3.z
+    w1 := -1.0 / p1.z
+    w2 := -1.0 / p2.z
+    w3 := -1.0 / p3.z
 
-    depth := -1.0 / ((alpha * p1zR) + (beta * p2zR) + (gamma * p3zR))
+    alphaP := alpha * w1
+    betaP  := beta * w2
+    gammaP := gamma * w3
+    invSum := 1.0 / (alphaP + betaP + gammaP)
 
     zIndex := (SCREEN_WIDTH * y) + x
+    depth := -invSum 
     if depth < zBuffer[zIndex] {
-        interpU := ((uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma) * -depth
-        interpV := ((uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma) * -depth
+        alphaC := alphaP * invSum
+        betaC  := betaP * invSum
+        gammaC := gammaP * invSum
 
-        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
+        interpU := ((uv1.x * w1) * alphaC + (uv2.x * w2) * betaC + (uv3.x * w3) * gammaC) * -depth
+        interpV := ((uv1.y * w1) * alphaC + (uv2.y * w2) * betaC + (uv3.y * w3) * gammaC) * -depth
 
-        position := ((v1^ * (alpha * p1zR)) + (v2^ * (beta * p2zR)) + (v3^ * (gamma * p3zR))) * -depth
-
+        interpNormal := Vector3Normalize(n1^ * alphaC + n2^ * betaC + n3^ * gammaC)
+        position := v1^ * alphaC + v2^ * betaC + v3^ * gammaC 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
 
@@ -798,11 +808,12 @@ ProjectToScreen :: proc(mat: Matrix4x4, p: Vector3) -> Vector3 {
 
     ndcX := clip.x / clip.w
     ndcY := clip.y / clip.w
+    ndcZ := clip.z / clip.w 
 
     screenX := (ndcX  * 0.5 + 0.5) * SCREEN_WIDTH
     screenY := (-ndcY * 0.5 + 0.5) * SCREEN_HEIGHT
 
-    return Vector3{screenX, screenY, p.z}
+    return Vector3{screenX, screenY, ndcZ}
 }
 
 IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
@@ -817,8 +828,7 @@ IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
 }
 
 IsFaceOutsideFrustum :: proc(p1, p2, p3: Vector3) -> bool {
-    if (p1.z > -NEAR_PLANE || p2.z > -NEAR_PLANE || p3.z > -NEAR_PLANE) || 
-       (p1.z < -FAR_PLANE  || p2.z < -FAR_PLANE  || p3.z < -FAR_PLANE) {
+    if (p1.z < 0 && p2.z < 0 && p3.z < 0) || (p1.z > 1 && p2.z > 1 && p3.z > 1) { 
         return true
     }
 
