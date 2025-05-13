@@ -204,7 +204,7 @@ DrawPixel :: proc(
     w2 := 1.0 / p2.z
     w3 := 1.0 / p3.z
     
-    depth := -1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
+    depth := 1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
     zBufferIndex := (SCREEN_WIDTH * y) + x
     
     if (depth < zBuffer[zBufferIndex]) {
@@ -396,13 +396,13 @@ DrawTexelFlatShaded :: proc(
     w2 := 1.0 / p2.z
     w3 := 1.0 / p3.z
     
-    depth := -1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
+    depth := 1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
     zBufferIndex := (SCREEN_WIDTH * y) + x
 
     if (depth < zBuffer[zBufferIndex]) {
 
-        interpU := ((uv1.x * w1) * weights.x + (uv2.x * w2) * weights.y + (uv3.x * w3) * weights.z) * -depth
-        interpV := ((uv1.y * w1) * weights.x + (uv2.y * w2) * weights.y + (uv3.y * w3) * weights.z) * -depth
+        interpU := ((uv1.x * w1) * weights.x + (uv2.x * w2) * weights.y + (uv3.x * w3) * weights.z) * depth
+        interpV := ((uv1.y * w1) * weights.x + (uv2.y * w2) * weights.y + (uv3.y * w3) * weights.z) * depth
 
         texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
@@ -558,7 +558,7 @@ DrawPixelPhongShaded :: proc(
     w2 := 1.0 / p2.z
     w3 := 1.0 / p3.z
 
-    depth := -1.0 / ((weights.x * w1) + (weights.y * w2) + (weights.z * w3))
+    depth := 1.0 / ((weights.x * w1) + (weights.y * w2) + (weights.z * w3))
     zIndex := (SCREEN_WIDTH * y) + x
 
     if depth < zBuffer[zIndex] {
@@ -734,16 +734,16 @@ DrawTexelPhongShaded :: proc(
     w2 := 1.0 / p2.z
     w3 := 1.0 / p3.z
 
-    depth := -1.0 / ((alpha * w1) + (beta * w2) + (gamma * w3))
+    depth := 1.0 / ((alpha * w1) + (beta * w2) + (gamma * w3))
 
     zIndex := (SCREEN_WIDTH * y) + x
     if depth < zBuffer[zIndex] {
-        interpU := ((uv1.x * w1) * alpha + (uv2.x * w2) * beta + (uv3.x * w3) * gamma) * -depth
-        interpV := ((uv1.y * w1) * alpha + (uv2.y * w2) * beta + (uv3.y * w3) * gamma) * -depth
+        interpU := ((uv1.x * w1) * alpha + (uv2.x * w2) * beta + (uv3.x * w3) * gamma) * depth
+        interpV := ((uv1.y * w1) * alpha + (uv2.y * w2) * beta + (uv3.y * w3) * gamma) * depth
 
         interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
 
-        position := ((v1^ * (alpha * w1)) + (v2^ * (beta * w2)) + (v3^ * (gamma * w3))) * -depth
+        position := ((v1^ * (alpha * w1)) + (v2^ * (beta * w2)) + (v3^ * (gamma * w3))) * depth
 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
@@ -796,11 +796,12 @@ ProjectToScreen :: proc(mat: Matrix4x4, p: Vector3) -> Vector3 {
 
     ndcX := clip.x / clip.w
     ndcY := clip.y / clip.w
+    ndcZ := clip.z / clip.w
 
     screenX := (ndcX  * 0.5 + 0.5) * SCREEN_WIDTH
     screenY := (-ndcY * 0.5 + 0.5) * SCREEN_HEIGHT
 
-    return Vector3{screenX, screenY, p.z}
+    return Vector3{screenX, screenY, ndcZ}
 }
 
 IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
@@ -815,8 +816,8 @@ IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
 }
 
 IsFaceOutsideFrustum :: proc(p1, p2, p3: Vector3) -> bool {
-    if (p1.z > -NEAR_PLANE || p2.z > -NEAR_PLANE || p3.z > -NEAR_PLANE) || 
-       (p1.z < -FAR_PLANE  || p2.z < -FAR_PLANE  || p3.z < -FAR_PLANE) {
+    if (p1.z > 1.0 || p2.z > 1.0 || p3.z > 1.0) || 
+       (p1.z < 0.0 || p2.z < 0.0 || p3.z < 0.0) {
         return true
     }
 
