@@ -53,8 +53,9 @@ MakeScaleMatrix :: proc(sx: f32, sy: f32, sz: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixX :: proc(angle: f32) -> Matrix4x4 {
-    c := math.cos(angle)
-    s := math.sin(angle)
+    angleDeg := angle * DEG_TO_RAD
+    c := math.cos(angleDeg)
+    s := math.sin(angleDeg)
 
     return Matrix4x4{
         {1.0,  0.0,  0.0,  0.0},
@@ -65,8 +66,9 @@ MakeRotationMatrixX :: proc(angle: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixY :: proc(angle: f32) -> Matrix4x4 {
-    c := math.cos(angle)
-    s := math.sin(angle)
+    angleDeg := angle * DEG_TO_RAD
+    c := math.cos(angleDeg)
+    s := math.sin(angleDeg)
 
     return Matrix4x4{
         {  c,  0.0,    s,  0.0},
@@ -77,8 +79,9 @@ MakeRotationMatrixY :: proc(angle: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixZ :: proc(angle: f32) -> Matrix4x4 {
-    c := math.cos(angle)
-    s := math.sin(angle)
+    angleDeg := angle * DEG_TO_RAD
+    c := math.cos(angleDeg)
+    s := math.sin(angleDeg)
 
     return Matrix4x4{
         {c,     -s,  0.0,  0.0},
@@ -101,8 +104,9 @@ MakeViewMatrix :: proc(eye: Vector3, target: Vector3) -> Matrix4x4 {
     }
 }
 
-MakeProjectionMatrix :: proc(fov: f32, aspect: f32, near: f32, far: f32) -> Matrix4x4 {
-    f := 1.0 / math.tan_f32(fov * 0.5)
+MakeProjectionMatrix :: proc(fov: f32, screenWidth: i32, screenHeight: i32, near: f32, far: f32) -> Matrix4x4 {
+    f := 1.0 / math.tan_f32(fov * 0.5 * DEG_TO_RAD)
+    aspect := f32(screenWidth) / f32(screenHeight)
 
     return Matrix4x4{
         { f / aspect, 0.0,                        0.0,  0.0},

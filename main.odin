@@ -19,17 +19,17 @@ main :: proc() {
     defer DeleteMesh(&mesh)
 
     texture := LoadTextureFromFile("assets/uv_checker.png")
-    camera := MakeCamera({0.0, 0.0, -5.0})
-    light := MakeLight({0.0, 0.0, -5.0}, {0.0, 1.0, 0.0}, 1.0)
+    camera := MakeCamera({0.0, 0.0, -3.0})
+    light := MakeLight({0.0, 0.0, -3.0}, {0.0, 1.0, 0.0}, 1.0)
 
-    rotation := Vector3{0.0, 0.0, 0.0}
+    rotation := Vector3{0.0, 180.0, 0.0}
     translation := Vector3{0.0, 0.0, 0.0}
     scale: f32 = 1.0
 
     renderModesCount :: 8
     renderMode: i8 = renderModesCount - 1
 
-    projMatrix := MakeProjectionMatrix(FOV_RAD, ASPECT, NEAR_PLANE, FAR_PLANE)
+    projMatrix := MakeProjectionMatrix(FOV, SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
 
     for !rl.WindowShouldClose() {
         deltaTime := rl.GetFrameTime()
