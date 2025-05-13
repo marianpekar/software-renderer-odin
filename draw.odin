@@ -385,14 +385,14 @@ DrawTexelFlatShaded :: proc(
     beta := weights.y
     gamma := weights.z
 
-    p1zR := 1.0 / p1.z
-    p2zR := 1.0 / p2.z
-    p3zR := 1.0 / p3.z
+    w1 := 1.0 / p1.z
+    w2 := 1.0 / p2.z
+    w3 := 1.0 / p3.z
 
-    interpU := (uv1.x * p1zR) * alpha + (uv2.x * p2zR) * beta + (uv3.x * p3zR) * gamma
-    interpV := (uv1.y * p1zR) * alpha + (uv2.y * p2zR) * beta + (uv3.y * p3zR) * gamma
+    interpU := (uv1.x * w1) * alpha + (uv2.x * w2) * beta + (uv3.x * w3) * gamma
+    interpV := (uv1.y * w1) * alpha + (uv2.y * w2) * beta + (uv3.y * w3) * gamma
 
-    interpolatedReciprocalZ := 1.0 / (p1zR * alpha + p2zR * beta + p3zR * gamma)
+    interpolatedReciprocalZ := 1.0 / (w1 * alpha + w2 * beta + w3 * gamma)
 
     interpU *= interpolatedReciprocalZ
     interpV *= interpolatedReciprocalZ
@@ -752,9 +752,6 @@ DrawTexelPhongShaded :: proc(
         betaC  := betaP * invSum
         gammaC := gammaP * invSum
 
-        interpU := ((uv1.x * w1) * alphaC + (uv2.x * w2) * betaC + (uv3.x * w3) * gammaC) * -depth
-        interpV := ((uv1.y * w1) * alphaC + (uv2.y * w2) * betaC + (uv3.y * w3) * gammaC) * -depth
-
         interpNormal := Vector3Normalize(n1^ * alphaC + n2^ * betaC + n3^ * gammaC)
         position := v1^ * alphaC + v2^ * betaC + v3^ * gammaC 
         lightVec := Vector3Normalize(light.position - position)
@@ -762,6 +759,9 @@ DrawTexelPhongShaded :: proc(
 
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
+
+        interpU := uv1.x * alphaC + uv2.x * betaC + uv3.x * gammaC
+        interpV := uv1.y * alphaC + uv2.y * betaC + uv3.y * gammaC
 
         texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
@@ -828,7 +828,7 @@ IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
 }
 
 IsFaceOutsideFrustum :: proc(p1, p2, p3: Vector3) -> bool {
-    if (p1.z < 0 && p2.z < 0 && p3.z < 0) || (p1.z > 1 && p2.z > 1 && p3.z > 1) { 
+    if (p1.z < 0 || p2.z < 0 || p3.z < 0) || (p1.z > 1 || p2.z > 1 || p3.z > 1) { 
         return true
     }
 
