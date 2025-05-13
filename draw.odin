@@ -790,10 +790,6 @@ BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
 ProjectToScreen :: proc(mat: Matrix4x4, p: Vector3) -> Vector3 {
     clip := Mat4MulVec4(mat, Vector4{p.x, p.y, p.z, 1.0})
 
-    if clip.w <= 0.0 {
-        return Vector3{math.INF_F32, math.INF_F32, math.INF_F32}
-    }
-
     ndcX := clip.x / clip.w
     ndcY := clip.y / clip.w
     ndcZ := clip.z / clip.w
