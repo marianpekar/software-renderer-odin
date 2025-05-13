@@ -550,29 +550,22 @@ DrawPixelPhongShaded :: proc(
     }
 
     weights := BarycentricWeights(a, b, c, p)
-    alpha := weights.x
-    beta  := weights.y
-    gamma := weights.z
-    
-    w1 := -1.0 / p1.z
-    w2 := -1.0 / p2.z
-    w3 := -1.0 / p3.z
 
-    alphaP := alpha * w1
-    betaP  := beta * w2
-    gammaP := gamma * w3
-    invSum := 1.0 / (alphaP + betaP + gammaP)
+    alpha := -weights.x / p1.z
+    beta  := -weights.y / p2.z
+    gamma := -weights.z / p3.z
+    invSum := 1.0 / (alpha + beta + gamma)
 
     zIndex := (SCREEN_WIDTH * y) + x
-    depth := -invSum 
+    depth := -invSum
 
     if depth < zBuffer[zIndex] {
-        alphaC := alphaP * invSum
-        betaC  := betaP * invSum
-        gammaC := gammaP * invSum
+        alphaInv := alpha * invSum
+        betaInv  := beta * invSum
+        gammaInv := gamma * invSum
 
-        interpNormal := Vector3Normalize(n1^ * alphaC + n2^ * betaC + n3^ * gammaC)
-        position := v1^ * alphaC + v2^ * betaC + v3^ * gammaC 
+        interpNormal := Vector3Normalize(n1^ * alphaInv + n2^ * betaInv + n3^ * gammaInv)
+        position := v1^ * alphaInv + v2^ * betaInv + v3^ * gammaInv 
         lightVec := Vector3Normalize(light.position - position)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
         intensity := ambient + diffuse * light.strength
@@ -732,36 +725,29 @@ DrawTexelPhongShaded :: proc(
     }
 
     weights := BarycentricWeights(a, b, c, p)
-    alpha := weights.x
-    beta  := weights.y
-    gamma := weights.z
-
-    w1 := -1.0 / p1.z
-    w2 := -1.0 / p2.z
-    w3 := -1.0 / p3.z
-
-    alphaP := alpha * w1
-    betaP  := beta * w2
-    gammaP := gamma * w3
-    invSum := 1.0 / (alphaP + betaP + gammaP)
+    alpha := -weights.x / p1.z
+    beta  := -weights.y / p2.z
+    gamma := -weights.z / p3.z
+    invSum := 1.0 / (alpha + beta + gamma)
 
     zIndex := (SCREEN_WIDTH * y) + x
-    depth := -invSum 
-    if depth < zBuffer[zIndex] {
-        alphaC := alphaP * invSum
-        betaC  := betaP * invSum
-        gammaC := gammaP * invSum
+    depth := -invSum
 
-        interpNormal := Vector3Normalize(n1^ * alphaC + n2^ * betaC + n3^ * gammaC)
-        position := v1^ * alphaC + v2^ * betaC + v3^ * gammaC 
+    if depth < zBuffer[zIndex] {
+        alphaInv := alpha * invSum
+        betaInv  := beta * invSum
+        gammaInv := gamma * invSum
+
+        interpNormal := Vector3Normalize(n1^ * alphaInv + n2^ * betaInv + n3^ * gammaInv)
+        position := v1^ * alphaInv + v2^ * betaInv + v3^ * gammaInv
         lightVec := Vector3Normalize(light.position - position)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
 
         intensity := ambient + diffuse * light.strength
         intensity = math.clamp(intensity, 0.0, 1.0)
 
-        interpU := uv1.x * alphaC + uv2.x * betaC + uv3.x * gammaC
-        interpV := uv1.y * alphaC + uv2.y * betaC + uv3.y * gammaC
+        interpU := uv1.x * alphaInv + uv2.x * betaInv + uv3.x * gammaInv
+        interpV := uv1.y * alphaInv + uv2.y * betaInv + uv3.y * gammaInv
 
         texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
