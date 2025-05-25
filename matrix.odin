@@ -5,9 +5,9 @@ import "core:math"
 Matrix4x4 :: [4][4]f32
 
 Mat4MulVec3 :: proc(mat: Matrix4x4, vec: Vector3) -> Vector3 {
-    x := mat[0][0]*vec.x + mat[1][0]*vec.y + mat[2][0]*vec.z + mat[3][0] + mat[0][3]
-    y := mat[0][1]*vec.x + mat[1][1]*vec.y + mat[2][1]*vec.z + mat[3][1] + mat[1][3]
-    z := mat[0][2]*vec.x + mat[1][2]*vec.y + mat[2][2]*vec.z + mat[3][2] + mat[2][3]
+    x := mat[0][0]*vec.x + mat[0][1]*vec.y + mat[0][2]*vec.z + mat[0][3]
+    y := mat[1][0]*vec.x + mat[1][1]*vec.y + mat[1][2]*vec.z + mat[1][3]
+    z := mat[2][0]*vec.x + mat[2][1]*vec.y + mat[2][2]*vec.z + mat[2][3]
 
     return Vector3{x, y, z}
 }
