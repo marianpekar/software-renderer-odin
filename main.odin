@@ -35,14 +35,14 @@ main :: proc() {
         deltaTime := rl.GetFrameTime()
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
 
+        // Translation
+        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
+
         // Rotation
         rotationMatrix := MakeRotationMatrix(rotation.x, rotation.y, rotation.z)
 
         // Scale
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
-
-        // Translation
-        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
 
         // Apply Transformations
         modelMatrix := Mat4Mul(translationMatrix, Mat4Mul(rotationMatrix, scaleMatrix))
