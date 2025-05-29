@@ -53,9 +53,9 @@ MakeScaleMatrix :: proc(sx: f32, sy: f32, sz: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixX :: proc(angle: f32) -> Matrix4x4 {
-    angleDeg := angle * DEG_TO_RAD
-    c := math.cos(angleDeg)
-    s := math.sin(angleDeg)
+    angleRad := angle * DEG_TO_RAD
+    c := math.cos(angleRad)
+    s := math.sin(angleRad)
 
     return Matrix4x4{
         {1.0,  0.0,  0.0,  0.0},
@@ -66,9 +66,9 @@ MakeRotationMatrixX :: proc(angle: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixY :: proc(angle: f32) -> Matrix4x4 {
-    angleDeg := angle * DEG_TO_RAD
-    c := math.cos(angleDeg)
-    s := math.sin(angleDeg)
+    angleRad := angle * DEG_TO_RAD
+    c := math.cos(angleRad)
+    s := math.sin(angleRad)
 
     return Matrix4x4{
         {  c,  0.0,    s,  0.0},
@@ -79,9 +79,9 @@ MakeRotationMatrixY :: proc(angle: f32) -> Matrix4x4 {
 }
 
 MakeRotationMatrixZ :: proc(angle: f32) -> Matrix4x4 {
-    angleDeg := angle * DEG_TO_RAD
-    c := math.cos(angleDeg)
-    s := math.sin(angleDeg)
+    angleRad := angle * DEG_TO_RAD
+    c := math.cos(angleRad)
+    s := math.sin(angleRad)
 
     return Matrix4x4{
         {c,     -s,  0.0,  0.0},
