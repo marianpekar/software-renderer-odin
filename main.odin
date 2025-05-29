@@ -36,10 +36,7 @@ main :: proc() {
         HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
 
         // Rotation
-        rotationX := MakeRotationMatrixX(rotation.x)
-        rotationY := MakeRotationMatrixY(rotation.y)
-        rotationZ := MakeRotationMatrixZ(rotation.z)
-        rotationXYZ := Mat4Mul(rotationZ, Mat4Mul(rotationY, rotationX))
+        rotationMatrix := MakeRotationMatrix(rotation.x, rotation.y, rotation.z)
 
         // Scale
         scaleMatrix := MakeScaleMatrix(scale, scale, scale)
@@ -48,7 +45,7 @@ main :: proc() {
         translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
 
         // Apply Transformations
-        modelMatrix := Mat4Mul(translationMatrix, Mat4Mul(rotationXYZ, scaleMatrix))
+        modelMatrix := Mat4Mul(translationMatrix, Mat4Mul(rotationMatrix, scaleMatrix))
 
         viewMatrix  := MakeViewMatrix(camera.position, camera.target)
         viewMatrix  = Mat4Mul(viewMatrix, modelMatrix)

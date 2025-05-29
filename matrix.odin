@@ -52,42 +52,25 @@ MakeScaleMatrix :: proc(sx: f32, sy: f32, sz: f32) -> Matrix4x4 {
     }
 }
 
-MakeRotationMatrixX :: proc(angle: f32) -> Matrix4x4 {
-    angleRad := angle * DEG_TO_RAD
-    c := math.cos(angleRad)
-    s := math.sin(angleRad)
+MakeRotationMatrix :: proc(pitch, yaw, roll: f32) -> Matrix4x4 {
+    alpha := yaw * DEG_TO_RAD
+    beta  := pitch * DEG_TO_RAD
+    gamma := roll * DEG_TO_RAD
 
-    return Matrix4x4{
-        {1.0,  0.0,  0.0,  0.0},
-        {0.0,    c,   -s,  0.0},
-        {0.0,    s,    c,  0.0},
-        {0.0,  0.0,  0.0,  1.0}    
-    }
-}
+    ca := math.cos(alpha)
+    sa := math.sin(alpha)
 
-MakeRotationMatrixY :: proc(angle: f32) -> Matrix4x4 {
-    angleRad := angle * DEG_TO_RAD
-    c := math.cos(angleRad)
-    s := math.sin(angleRad)
+    cb := math.cos(beta)
+    sb := math.sin(beta)
 
-    return Matrix4x4{
-        {  c,  0.0,    s,  0.0},
-        {0.0,  1.0,  0.0,  0.0},
-        { -s,  0.0,    c,  0.0},
-        {0.0,  0.0,  0.0,  1.0}
-    }
-}
+    cg := math.cos(gamma)
+    sg := math.sin(gamma)
 
-MakeRotationMatrixZ :: proc(angle: f32) -> Matrix4x4 {
-    angleRad := angle * DEG_TO_RAD
-    c := math.cos(angleRad)
-    s := math.sin(angleRad)
-
-    return Matrix4x4{
-        {c,     -s,  0.0,  0.0},
-        {s,      c,  0.0,  0.0},
-        {0.0,  0.0,  1.0,  0.0},
-        {0.0,  0.0,  0.0,  1.0}
+    return Matrix4x4 {
+        {ca*cb, ca*sb*sg-sa*cg,  ca*sb*cg+sa*sg,  0.0},
+        {sa*cb, sa*sb*sg+ca*cg,  sa*sb*cg-ca*sg,  0.0},
+        {  -sb,          cb*sg,  cb*cg,           0.0},
+        {  0.0,              0.0,  0.0,           1.0}
     }
 }
 
