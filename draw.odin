@@ -186,30 +186,25 @@ DrawPixel :: proc(
     zBuffer: ^ZBuffer,
     image: ^rl.Image
 ) {
-    p := Vector2{x, y}
-    a := p1.xy
-    b := p2.xy
-    c := p3.xy
-
-    x := i32(x)
-    y := i32(y)
-
-    if IsPointOutsideViewport(x,y) {
+    ix := i32(x)
+    iy := i32(y)
+    if IsPointOutsideViewport(ix, iy) {
         return
     }
 
-    weights := BarycentricWeights(a, b, c, p)
+    p       := Vector2{x, y}
+    weights := BarycentricWeights(p1.xy, p2.xy, p3.xy, p)
+    alpha   := weights.x
+    beta    := weights.y
+    gamma   := weights.z
 
-    w1 := 1.0 / p1.z
-    w2 := 1.0 / p2.z
-    w3 := 1.0 / p3.z
-    
-    depth := 1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
-    zBufferIndex := (SCREEN_WIDTH * y) + x
-    
-    if (depth < zBuffer[zBufferIndex]) {
+    denom  := alpha*p1.z + beta*p2.z + gamma*p3.z
+    depth := 1.0 / denom
+
+    zIndex := SCREEN_WIDTH*iy + ix
+    if (depth < zBuffer[zIndex]) {
         rl.ImageDrawPixel(image, i32(x), i32(y), color)
-        zBuffer[zBufferIndex] = depth
+        zBuffer[zIndex] = depth
     }
 }
 
@@ -378,46 +373,40 @@ DrawTexelFlatShaded :: proc(
     zBuffer: ^ZBuffer,
     image: ^rl.Image
 ) {
-    p := Vector2{x, y}
-    a := p1.xy
-    b := p2.xy
-    c := p3.xy
-
-    x := i32(x)
-    y := i32(y)
-
-    if IsPointOutsideViewport(x,y) {
+    ix := i32(x)
+    iy := i32(y)
+    if IsPointOutsideViewport(ix, iy) {
         return
     }
 
-    weights := BarycentricWeights(a, b, c, p)
+    p       := Vector2{x, y}
+    weights := BarycentricWeights(p1.xy, p2.xy, p3.xy, p)
+    alpha   := weights.x
+    beta    := weights.y
+    gamma   := weights.z
 
-    w1 := 1.0 / p1.z
-    w2 := 1.0 / p2.z
-    w3 := 1.0 / p3.z
-    
-    depth := 1.0 / (w1 * weights.x + w2 * weights.y + w3 * weights.z)
-    zBufferIndex := (SCREEN_WIDTH * y) + x
+    denom  := alpha*p1.z + beta*p2.z + gamma*p3.z
+    depth := 1.0 / denom
 
-    if (depth < zBuffer[zBufferIndex]) {
+    zIndex := SCREEN_WIDTH*iy + ix
+    if depth <= zBuffer[zIndex] {
+        
+        interpU := ((uv1.x*p1.z)*alpha + (uv2.x*p2.z)*beta + (uv3.x*p3.z)*gamma) * depth
+        interpV := ((uv1.y*p1.z)*alpha + (uv2.y*p2.z)*beta + (uv3.y*p3.z)*gamma) * depth
 
-        interpU := ((uv1.x * w1) * weights.x + (uv2.x * w2) * weights.y + (uv3.x * w3) * weights.z) * depth
-        interpV := ((uv1.y * w1) * weights.x + (uv2.y * w2) * weights.y + (uv3.y * w3) * weights.z) * depth
-
-        texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
+        texX := i32(interpU * f32(texture.width )) & (texture.width  - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
+        tex  := texture.pixels[texY*texture.width + texX]
     
-        color := texture.pixels[texY * texture.width + texX]
-    
-        shadedColor := rl.Color{
-            u8(f32(color.r) * intensity),
-            u8(f32(color.g) * intensity),
-            u8(f32(color.b) * intensity),
-            color.a
+        shadedTex := rl.Color{
+            u8(f32(tex.r) * intensity),
+            u8(f32(tex.g) * intensity),
+            u8(f32(tex.b) * intensity),
+            tex.a,
         }
 
-        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
-        zBuffer[zBufferIndex] = depth
+        rl.ImageDrawPixel(image, i32(x), i32(y), shadedTex)
+        zBuffer[zIndex] = depth
     }
 }
 
@@ -540,37 +529,29 @@ DrawPixelPhongShaded :: proc(
     zBuffer: ^ZBuffer,
     image: ^rl.Image
 ) {
-    p := Vector2{x, y}
-    a := p1.xy
-    b := p2.xy
-    c := p3.xy
-
-    x := i32(x)
-    y := i32(y)
-
-    if IsPointOutsideViewport(x, y) {
+    ix := i32(x)
+    iy := i32(y)
+    if IsPointOutsideViewport(ix, iy) {
         return
     }
 
-    weights := BarycentricWeights(a, b, c, p)
+    p       := Vector2{x, y}
+    weights := BarycentricWeights(p1.xy, p2.xy, p3.xy, p)
+    alpha   := weights.x
+    beta    := weights.y
+    gamma   := weights.z
 
-    w1 := 1.0 / p1.z
-    w2 := 1.0 / p2.z
-    w3 := 1.0 / p3.z
+    denom  := alpha*p1.z + beta*p2.z + gamma*p3.z
+    depth := 1.0 / denom
 
-    depth := 1.0 / ((weights.x * w1) + (weights.y * w2) + (weights.z * w3))
-    zIndex := (SCREEN_WIDTH * y) + x
-
-    if depth < zBuffer[zIndex] {
+    zIndex := SCREEN_WIDTH*iy + ix
+    if depth <= zBuffer[zIndex] {
         interpNormal := Vector3Normalize(n1^ * weights.x + n2^ * weights.y + n3^ * weights.z)
+        interpPos := ((v1^*p1.z)*alpha + (v2^*p2.z)*beta + (v3^*p3.z)*gamma) * depth
 
-        position := ((v1^ * (weights.x * w1)) + (v2^ * (weights.y * w2)) + (v3^ * (weights.z * w3))) * depth
-
-        lightVec := Vector3Normalize(light.position - position)
+        lightVec := Vector3Normalize(light.position - interpPos)
         diffuse := Vector3DotProduct(interpNormal, lightVec)
-
-        intensity := ambient + diffuse * light.strength
-        intensity = math.clamp(intensity, 0.0, 1.0)
+        intensity    := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(color.r) * intensity),
@@ -579,7 +560,7 @@ DrawPixelPhongShaded :: proc(
             color.a,
         }
 
-        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
+        rl.ImageDrawPixel(image, ix, iy, shadedColor)
         zBuffer[zIndex] = depth
     }
 }
@@ -713,56 +694,46 @@ DrawTexelPhongShaded :: proc(
     zBuffer: ^ZBuffer,
     image: ^rl.Image
 ) {
-    p := Vector2{x, y}
-    a := p1.xy
-    b := p2.xy
-    c := p3.xy
-
-    x := i32(x)
-    y := i32(y)
-
-    if IsPointOutsideViewport(x, y) {
+    ix := i32(x)
+    iy := i32(y)
+    if IsPointOutsideViewport(ix, iy) {
         return
     }
 
-    weights := BarycentricWeights(a, b, c, p)
-    alpha := weights.x
-    beta  := weights.y
-    gamma := weights.z
+    p       := Vector2{x, y}
+    weights := BarycentricWeights(p1.xy, p2.xy, p3.xy, p)
+    alpha   := weights.x
+    beta    := weights.y
+    gamma   := weights.z
 
-    w1 := 1.0 / p1.z
-    w2 := 1.0 / p2.z
-    w3 := 1.0 / p3.z
+    denom  := alpha*p1.z + beta*p2.z + gamma*p3.z
+    depth := 1.0 / denom
 
-    depth := 1.0 / ((alpha * w1) + (beta * w2) + (gamma * w3))
+    zIndex := SCREEN_WIDTH*iy + ix
+    if depth <= zBuffer[zIndex] {
+        interpU := ((uv1.x*p1.z)*alpha + (uv2.x*p2.z)*beta + (uv3.x*p3.z)*gamma) * depth
+        interpV := ((uv1.y*p1.z)*alpha + (uv2.y*p2.z)*beta + (uv3.y*p3.z)*gamma) * depth
 
-    zIndex := (SCREEN_WIDTH * y) + x
-    if depth < zBuffer[zIndex] {
-        interpU := ((uv1.x * w1) * alpha + (uv2.x * w2) * beta + (uv3.x * w3) * gamma) * depth
-        interpV := ((uv1.y * w1) * alpha + (uv2.y * w2) * beta + (uv3.y * w3) * gamma) * depth
+        interpPos := ((v1^*p1.z)*alpha + (v2^*p2.z)*beta + (v3^*p3.z)*gamma) * depth
 
-        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
+        interpNormal := Vector3Normalize(n1^*alpha + n2^*beta + n3^*gamma)
 
-        position := ((v1^ * (alpha * w1)) + (v2^ * (beta * w2)) + (v3^ * (gamma * w3))) * depth
+        lightVec     := Vector3Normalize(light.position - interpPos)
+        diffuse      := math.max(Vector3DotProduct(interpNormal, lightVec), 0.0)
+        intensity    := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
 
-        lightVec := Vector3Normalize(light.position - position)
-        diffuse := Vector3DotProduct(interpNormal, lightVec)
-
-        intensity := ambient + diffuse * light.strength
-        intensity = math.clamp(intensity, 0.0, 1.0)
-
-        texX := i32(interpU * f32(texture.width)) & (texture.width - 1)
+        texX := i32(interpU * f32(texture.width )) & (texture.width  - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
-        color := texture.pixels[texY * texture.width + texX]
+        tex  := texture.pixels[texY*texture.width + texX]
 
-        shadedColor := rl.Color{
-            u8(f32(color.r) * intensity),
-            u8(f32(color.g) * intensity),
-            u8(f32(color.b) * intensity),
-            color.a,
+        shadedTex := rl.Color{
+            u8(f32(tex.r) * intensity),
+            u8(f32(tex.g) * intensity),
+            u8(f32(tex.b) * intensity),
+            tex.a,
         }
 
-        rl.ImageDrawPixel(image, i32(x), i32(y), shadedColor)
+        rl.ImageDrawPixel(image, ix, iy, shadedTex)
         zBuffer[zIndex] = depth
     }
 }
@@ -790,14 +761,15 @@ BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
 ProjectToScreen :: proc(mat: Matrix4x4, p: Vector3) -> Vector3 {
     clip := Mat4MulVec4(mat, Vector4{p.x, p.y, p.z, 1.0})
 
-    ndcX := clip.x / clip.w
-    ndcY := clip.y / clip.w
-    ndcZ := clip.z / clip.w
+    invW := 1.0 / clip.w 
 
-    screenX := (ndcX  * 0.5 + 0.5) * SCREEN_WIDTH
+    ndcX := clip.x * invW
+    ndcY := clip.y * invW
+
+    screenX := ( ndcX * 0.5 + 0.5) * SCREEN_WIDTH
     screenY := (-ndcY * 0.5 + 0.5) * SCREEN_HEIGHT
 
-    return Vector3{screenX, screenY, ndcZ}
+    return Vector3{screenX, screenY, invW}
 }
 
 IsBackFace :: proc(v1, v2, v3: Vector3) -> bool {
