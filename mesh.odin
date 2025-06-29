@@ -160,6 +160,7 @@ MakeCube :: proc() -> Mesh {
 
     return Mesh{
         transformedVertices = transformedVertices,
+        transformedNormals = transformedNormals,
         vertices = vertices,
         normals = normals,
         triangles = triangles,
