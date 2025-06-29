@@ -1,20 +1,24 @@
 package main
 
 import "core:math"
+import "core:strconv"
+import "core:strings"
 import rl "vendor:raylib"
 
 DrawWireframe :: proc(
-    vertices: []Vector3, 
+    verticesWorld: []Vector3,
+    verticesModel: []Vector3,
     triangles: []Triangle, 
     color: rl.Color,
     image: ^rl.Image, 
     projMat: Matrix4x4,
+    drawCoords: bool,
     cullBackFace: bool = true
 ) {
     for &tri in triangles {
-        v1 := vertices[tri[0]]
-        v2 := vertices[tri[1]]
-        v3 := vertices[tri[2]]
+        v1 := verticesWorld[tri[0]]
+        v2 := verticesWorld[tri[1]]
+        v3 := verticesWorld[tri[2]]
 
         if cullBackFace && IsBackFace(v1, v2, v3) {
             continue
@@ -31,7 +35,59 @@ DrawWireframe :: proc(
         DrawLine({p1.x, p1.y}, {p2.x, p2.y}, color, image)
         DrawLine({p2.x, p2.y}, {p3.x, p3.y}, color, image)
         DrawLine({p3.x, p3.y}, {p1.x, p1.y}, color, image)
+
+        if (drawCoords) {
+            
+            vm1 := verticesModel[tri[0]]
+            vm2 := verticesModel[tri[1]]
+            vm3 := verticesModel[tri[2]]
+
+            DrawCoords(v1, vm1, {p1.x, p1.y}, image)
+            DrawCoords(v2, vm2, {p2.x, p2.y}, image)
+            DrawCoords(v3, vm3, {p3.x, p3.y}, image)
+        }
     }
+}
+
+DrawCoords :: proc(v: Vector3, vm: Vector3, p: Vector2, image: ^rl.Image) {
+    buf: [32]byte
+    bitSize := 64
+    precision := 2
+
+    // Model Space
+    str := strings.concatenate({
+        "[",
+        strings.clone(strconv.ftoa(buf[:], f64(vm.x), 'f', precision, bitSize)),
+        ",",
+        strings.clone(strconv.ftoa(buf[:], f64(vm.y), 'f', precision, bitSize)),
+        ",",
+        strings.clone(strconv.ftoa(buf[:], f64(vm.z), 'f', precision, bitSize)),
+        "]"
+    })
+    rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y), 10, rl.BLUE)
+
+    // World Space
+    str = strings.concatenate({
+        "[",
+        strings.clone(strconv.ftoa(buf[:], f64(v.x), 'f', precision, bitSize)),
+        ",",
+        strings.clone(strconv.ftoa(buf[:], f64(v.y), 'f', precision, bitSize)),
+        ",",
+        strings.clone(strconv.ftoa(buf[:], f64(v.z), 'f', precision, bitSize)),
+        "]"
+    })
+    rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y + 10), 10, rl.YELLOW)
+
+    // Screen Space
+    precision = 0
+    str = strings.concatenate({
+        "[",
+        strings.clone(strconv.ftoa(buf[:], f64(p.x), 'f', precision, bitSize)),
+        ",",
+        strings.clone(strconv.ftoa(buf[:], f64(p.y), 'f', precision, bitSize)),
+        "]"
+    })
+    rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y + 20), 10, rl.GREEN)
 }
 
 DrawLine :: proc(a, b: Vector2, color: rl.Color, image: ^rl.Image) {

@@ -14,7 +14,7 @@ main :: proc() {
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
-    //mesh := Makemesh()
+    //mesh := MakeCube()
     mesh := LoadMeshFromObjFile("assets/monkey.obj")
     defer DeleteMesh(&mesh)
 
@@ -28,12 +28,13 @@ main :: proc() {
 
     renderModesCount :: 8
     renderMode: i8 = renderModesCount - 1
+    drawCoordsInWireframe := false;
 
     projMatrix := MakeProjectionMatrix(FOV, SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
 
     for !rl.WindowShouldClose() {
         deltaTime := rl.GetFrameTime()
-        HandleInputs(&translation, &rotation, &scale, &renderMode, renderModesCount, deltaTime)
+        HandleInputs(&translation, &rotation, &scale, &renderMode, &drawCoordsInWireframe, renderModesCount, deltaTime)
 
         // Translation
         translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
@@ -64,8 +65,8 @@ main :: proc() {
             case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer, &renderImage, projMatrix)
             case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer, &renderImage, projMatrix)
             case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage, projMatrix)
-            case 1: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, projMatrix)
-            case 0: DrawWireframe(mesh.transformedVertices, mesh.triangles, rl.RED, &renderImage, projMatrix, false)
+            case 1: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, drawCoordsInWireframe)
+            case 0: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, drawCoordsInWireframe, false)
         }
 
         rl.UpdateTexture(renderTexture, renderImage.data)

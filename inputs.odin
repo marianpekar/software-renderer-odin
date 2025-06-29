@@ -2,7 +2,7 @@ package main
 
 import rl "vendor:raylib"
 
-HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^i8, renderModesCount: i8, deltaTime: f32) {
+HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^i8, drawCoordsInWireframe: ^bool, renderModesCount: i8, deltaTime: f32) {
     linearStep: f32 = (rl.IsKeyDown(rl.KeyboardKey.LEFT_SHIFT) ? 0.25 : 1) * deltaTime
     angularStep: f32 = (rl.IsKeyDown(rl.KeyboardKey.LEFT_SHIFT) ? 12 : 48) * deltaTime
 
@@ -27,5 +27,9 @@ HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^
         renderMode^ = (renderMode^ + renderModesCount - 1) % renderModesCount
     } else if rl.IsKeyPressed(rl.KeyboardKey.RIGHT) {
         renderMode^ = (renderMode^ + 1) % renderModesCount
+    }
+
+    if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
+        drawCoordsInWireframe^ = !drawCoordsInWireframe^
     }
 }
