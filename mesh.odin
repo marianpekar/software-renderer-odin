@@ -105,11 +105,7 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
 }
 
 MakeCube :: proc() -> Mesh {
-    transformedVertices := make([]Vector3, 8)
-    transformedNormals := make([]Vector3, 6)
-
     vertices := make([]Vector3, 8)
-
     vertices[0] = Vector3{-1.0, -1.0, -1.0}
     vertices[1] = Vector3{-1.0,  1.0, -1.0}
     vertices[2] = Vector3{ 1.0,  1.0, -1.0}
@@ -138,7 +134,6 @@ MakeCube :: proc() -> Mesh {
     uvs[5] =  Vector2{1.0, 0.0}
 
     triangles := make([]Triangle, 12)
-
     // Front                 vert.     uvs       norm.
     triangles[0] =  Triangle{0, 1, 2,  0, 1, 2,  0, 0, 0}
     triangles[1] =  Triangle{0, 2, 3,  3, 4, 5,  0, 0, 0}
@@ -159,8 +154,8 @@ MakeCube :: proc() -> Mesh {
     triangles[11] = Triangle{5, 0, 3,  3, 4, 5,  5, 5, 5}
 
     return Mesh{
-        transformedVertices = transformedVertices,
-        transformedNormals = transformedNormals,
+        transformedVertices = make([]Vector3, 8),
+        transformedNormals = make([]Vector3, 6),
         vertices = vertices,
         normals = normals,
         triangles = triangles,
