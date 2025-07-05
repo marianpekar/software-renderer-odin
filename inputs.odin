@@ -2,7 +2,7 @@ package main
 
 import rl "vendor:raylib"
 
-HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^i8, drawCoordsInWireframe: ^bool, renderModesCount: i8, deltaTime: f32) {
+HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^i8, drawCoordsInWireframe: ^bool, projType: ^ProjectionType, renderModesCount: i8, deltaTime: f32) {
     linearStep: f32 = (rl.IsKeyDown(rl.KeyboardKey.LEFT_SHIFT) ? 0.25 : 1) * deltaTime
     angularStep: f32 = (rl.IsKeyDown(rl.KeyboardKey.LEFT_SHIFT) ? 12 : 48) * deltaTime
 
@@ -31,5 +31,12 @@ HandleInputs :: proc(translation, rotation: ^Vector3, scale: ^f32, renderMode: ^
 
     if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
         drawCoordsInWireframe^ = !drawCoordsInWireframe^
+    }
+    
+    if rl.IsKeyPressed(rl.KeyboardKey.KP_0) {
+        projType^ = .Perspective
+    }
+    if rl.IsKeyPressed(rl.KeyboardKey.KP_1) {
+        projType^ = .Orthographic
     }
 }
