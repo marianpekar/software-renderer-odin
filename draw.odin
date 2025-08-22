@@ -169,6 +169,14 @@ DrawFlatShaded :: proc(
             continue
         }
 
+        p1 := ProjectToScreen(projType, projMat, v1)
+        p2 := ProjectToScreen(projType, projMat, v2)
+        p3 := ProjectToScreen(projType, projMat, v3)
+
+        if IsFaceOutsideFrustum(p1, p2, p3) {
+            continue
+        }
+
         intensity := Vector3DotProduct(crossNorm, light.direction)
         intensity = math.clamp(intensity, 0.0, 1.0)
         intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
@@ -178,14 +186,6 @@ DrawFlatShaded :: proc(
             u8(f32(baseColor.g) * intensity),
             u8(f32(baseColor.b) * intensity),
             baseColor.a
-        }
-
-        p1 := ProjectToScreen(projType, projMat, v1)
-        p2 := ProjectToScreen(projType, projMat, v2)
-        p3 := ProjectToScreen(projType, projMat, v3)
-
-        if IsFaceOutsideFrustum(p1, p2, p3) {
-            continue
         }
 
         DrawFilledTriangle(&p1, &p2, &p3, shadedColor, zBuffer, image)
@@ -348,10 +348,6 @@ DrawTexturedFlatShaded :: proc(
             continue
         }
 
-        intensity := Vector3DotProduct(crossNorm, light.direction)
-        intensity = math.clamp(intensity, 0.0, 1.0)
-        intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
-
         p1 := ProjectToScreen(projType, projMat, v1)
         p2 := ProjectToScreen(projType, projMat, v2)
         p3 := ProjectToScreen(projType, projMat, v3)
@@ -359,6 +355,10 @@ DrawTexturedFlatShaded :: proc(
         if (IsFaceOutsideFrustum(p1, p2, p3)) {
             continue
         }
+        
+        intensity := Vector3DotProduct(crossNorm, light.direction)
+        intensity = math.clamp(intensity, 0.0, 1.0)
+        intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
 
         DrawTexturedTriangleFlatShaded(
             &p1, &p2, &p3,
