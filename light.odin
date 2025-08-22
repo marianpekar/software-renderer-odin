@@ -9,7 +9,7 @@ Light :: struct {
 MakeLight :: proc(position, direction: Vector3, strength: f32) -> Light {
     return { 
         position, 
-        direction, 
+        Vector3Normalize(direction), 
         strength 
     }
 }
