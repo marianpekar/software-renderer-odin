@@ -13,7 +13,3 @@ MakeLight :: proc(position, direction: Vector3, strength: f32) -> Light {
         strength 
     }
 }
-
-NormalizeLight :: proc(light: ^Light) {
-    light.direction = Vector3Normalize(light.direction)
-}
