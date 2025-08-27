@@ -617,12 +617,12 @@ DrawPixelPhongShaded :: proc(
 
     zIndex := SCREEN_WIDTH*iy + ix
     if depth <= zBuffer[zIndex] {
-        interpNormal := Vector3Normalize(n1^ * weights.x + n2^ * weights.y + n3^ * weights.z)
-        interpPos := ((v1^*p1.z)*alpha + (v2^*p2.z)*beta + (v3^*p3.z)*gamma) * depth
+        interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
+        interpPos    := ((v1^*p1.z) * alpha + (v2^*p2.z) * beta + (v3^*p3.z) * gamma) * depth
 
-        lightVec := Vector3Normalize(light.position - interpPos)
-        diffuse := Vector3DotProduct(interpNormal, lightVec)
-        intensity    := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
+        lightVec  := Vector3Normalize(light.position - interpPos)
+        diffuse   := Vector3DotProduct(interpNormal, lightVec)
+        intensity := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(color.r) * intensity),
