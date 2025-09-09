@@ -819,10 +819,6 @@ BarycentricWeights :: proc(a, b, c, p: Vector2) -> Vector3 {
 
     area := (ac.x * ab.y - ac.y * ab.x)
 
-    if area == 0.0 {
-        return Vector3{0.0, 0.0, 0.0}
-    }
-
     alpha := (pc.x * pb.y - pc.y * pb.x) / area
     beta := (ac.x * ap.y - ac.y * ap.x) / area
     gamma := 1.0 - alpha - beta
