@@ -177,9 +177,7 @@ DrawFlatShaded :: proc(
             continue
         }
 
-        intensity := Vector3DotProduct(crossNorm, light.direction)
-        intensity = math.clamp(intensity, 0.0, 1.0)
-        intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
+        intensity := math.clamp(Vector3DotProduct(crossNorm, light.direction), ambient, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(baseColor.r) * intensity),
@@ -356,9 +354,7 @@ DrawTexturedFlatShaded :: proc(
             continue
         }
         
-        intensity := Vector3DotProduct(crossNorm, light.direction)
-        intensity = math.clamp(intensity, 0.0, 1.0)
-        intensity = math.clamp(ambient + intensity * light.strength, 0.0, 1.0)
+        intensity := math.clamp(Vector3DotProduct(crossNorm, light.direction), ambient, 1.0)
 
         DrawTexturedTriangleFlatShaded(
             &p1, &p2, &p3,
@@ -622,7 +618,7 @@ DrawPixelPhongShaded :: proc(
 
         lightVec  := Vector3Normalize(light.position - interpPos)
         diffuse   := Vector3DotProduct(interpNormal, lightVec)
-        intensity := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
+        intensity := math.clamp(diffuse * light.strength, ambient, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(color.r) * intensity),
@@ -792,7 +788,7 @@ DrawTexelPhongShaded :: proc(
 
         lightVec     := Vector3Normalize(light.position - interpPos)
         diffuse      := math.max(Vector3DotProduct(interpNormal, lightVec), 0.0)
-        intensity    := math.clamp(ambient + diffuse*light.strength, 0.0, 1.0)
+        intensity    := math.clamp(diffuse * light.strength, ambient, 1.0)
 
         texX := i32(interpU * f32(texture.width )) & (texture.width  - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)
