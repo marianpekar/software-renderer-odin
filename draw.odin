@@ -143,7 +143,7 @@ DrawUnlit :: proc(
 DrawFlatShaded :: proc(
     vertices: []Vector3, 
     triangles: []Triangle, 
-    light: Light, 
+    lights: []Light, 
     baseColor: rl.Color, 
     zBuffer: ^ZBuffer, 
     image: ^rl.Image,
@@ -176,8 +176,12 @@ DrawFlatShaded :: proc(
         if IsFaceOutsideFrustum(p1, p2, p3) {
             continue
         }
-
-        intensity := math.clamp(Vector3DotProduct(crossNorm, light.direction), ambient, 1.0)
+        
+        intensity: f32 = ambient
+        for &light in lights {
+            intensity += math.max(0.0, Vector3DotProduct(crossNorm, light.direction))
+        }
+        intensity = math.min(intensity, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(baseColor.r) * intensity),
@@ -316,7 +320,7 @@ DrawTexturedFlatShaded :: proc(
     vertices: []Vector3, 
     triangles: []Triangle, 
     uvs: []Vector2, 
-    light: Light, 
+    lights: []Light, 
     texture: Texture, 
     zBuffer: ^ZBuffer,
     image: ^rl.Image,
@@ -354,7 +358,11 @@ DrawTexturedFlatShaded :: proc(
             continue
         }
         
-        intensity := math.clamp(Vector3DotProduct(crossNorm, light.direction), ambient, 1.0)
+        intensity: f32 = ambient
+        for &light in lights {
+            intensity += math.max(0.0, Vector3DotProduct(crossNorm, light.direction))
+        }
+        intensity = math.min(intensity, 1.0)
 
         DrawTexturedTriangleFlatShaded(
             &p1, &p2, &p3,
@@ -480,7 +488,7 @@ DrawPhongShaded :: proc(
     vertices: []Vector3, 
     triangles: []Triangle, 
     normals: []Vector3, 
-    light: Light, 
+    lights: []Light, 
     color: rl.Color, 
     zBuffer: ^ZBuffer, 
     image: ^rl.Image,
@@ -513,7 +521,7 @@ DrawPhongShaded :: proc(
             &v1, &v2, &v3, 
             &p1, &p2, &p3,
             &n1, &n2, &n3,
-            color, light, ambient, zBuffer, image
+            color, lights, ambient, zBuffer, image
         )
     }
 }
@@ -523,7 +531,7 @@ DrawTrianglePhongShaded :: proc(
     p1, p2, p3: ^Vector3,
     n1, n2, n3: ^Vector3,
     color: rl.Color,
-    light: Light,
+    lights: []Light,
     ambient: f32,
     zBuffer: ^ZBuffer,
     image: ^rl.Image
@@ -553,7 +561,7 @@ DrawTrianglePhongShaded :: proc(
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
-                    color, light, ambient, zBuffer, image
+                    color, lights, ambient, zBuffer, image
                 )
             }
         }
@@ -578,7 +586,7 @@ DrawTrianglePhongShaded :: proc(
                     v1, v2, v3, 
                     n1, n2, n3,
                     p1, p2, p3,
-                    color, light, ambient, zBuffer, image
+                    color, lights, ambient, zBuffer, image
                 )
             }
         }
@@ -591,7 +599,7 @@ DrawPixelPhongShaded :: proc(
     n1, n2, n3: ^Vector3,
     p1, p2, p3: ^Vector3,
     color: rl.Color,
-    light: Light,
+    lights: []Light,
     ambient: f32,
     zBuffer: ^ZBuffer,
     image: ^rl.Image
@@ -616,9 +624,13 @@ DrawPixelPhongShaded :: proc(
         interpNormal := Vector3Normalize(n1^ * alpha + n2^ * beta + n3^ * gamma)
         interpPos    := ((v1^*p1.z) * alpha + (v2^*p2.z) * beta + (v3^*p3.z) * gamma) * depth
 
-        lightVec  := Vector3Normalize(light.position - interpPos)
-        diffuse   := Vector3DotProduct(interpNormal, lightVec)
-        intensity := math.clamp(diffuse * light.strength, ambient, 1.0)
+        intensity: f32 = ambient
+        for &light in lights {
+            lightVec := Vector3Normalize(light.position - interpPos)
+            diffuse  := math.max(Vector3DotProduct(interpNormal, lightVec), 0.0)
+            intensity += diffuse * light.strength
+        }
+        intensity = math.min(intensity, 1.0)
 
         shadedColor := rl.Color{
             u8(f32(color.r) * intensity),
@@ -637,7 +649,7 @@ DrawTexturedPhongShaded :: proc(
     triangles: []Triangle, 
     uvs: []Vector2, 
     normals: []Vector3, 
-    light: Light, 
+    lights: []Light,
     texture: Texture, 
     zBuffer: ^ZBuffer,
     image: ^rl.Image,
@@ -675,7 +687,7 @@ DrawTexturedPhongShaded :: proc(
             &p1, &p2, &p3,
             &uv1, &uv2, &uv3,
             &n1, &n2, &n3,
-            texture, light, ambient, zBuffer, image
+            texture, lights, ambient, zBuffer, image
         )
     }
 }
@@ -686,7 +698,7 @@ DrawTexturedTrianglePhongShaded :: proc(
     uv1, uv2, uv3: ^Vector2,
     n1, n2, n3: ^Vector3,
     texture: Texture,
-    light: Light,
+    lights: []Light,
     ambient: f32,
     zBuffer: ^ZBuffer,
     image: ^rl.Image
@@ -717,7 +729,7 @@ DrawTexturedTrianglePhongShaded :: proc(
                     n1, n2, n3, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, light, ambient, zBuffer, image
+                    texture, lights, ambient, zBuffer, image
                 )
             }
         }
@@ -743,7 +755,7 @@ DrawTexturedTrianglePhongShaded :: proc(
                     n1, n2, n3, 
                     p1, p2, p3, 
                     uv1, uv2, uv3, 
-                    texture, light, ambient, zBuffer, image
+                    texture, lights, ambient, zBuffer, image
                 )
             }
         }
@@ -757,7 +769,7 @@ DrawTexelPhongShaded :: proc(
     p1, p2, p3: ^Vector3,
     uv1, uv2, uv3: ^Vector2,
     texture: Texture,
-    light: Light,
+    lights: []Light,
     ambient: f32,
     zBuffer: ^ZBuffer,
     image: ^rl.Image
@@ -786,9 +798,13 @@ DrawTexelPhongShaded :: proc(
 
         interpNormal := Vector3Normalize(n1^*alpha + n2^*beta + n3^*gamma)
 
-        lightVec     := Vector3Normalize(light.position - interpPos)
-        diffuse      := math.max(Vector3DotProduct(interpNormal, lightVec), 0.0)
-        intensity    := math.clamp(diffuse * light.strength, ambient, 1.0)
+        intensity: f32 = ambient
+        for &light in lights {
+            lightVec := Vector3Normalize(light.position - interpPos)
+            diffuse  := math.max(Vector3DotProduct(interpNormal, lightVec), 0.0)
+            intensity += diffuse * light.strength
+        }
+        intensity = math.min(intensity, 1.0)
 
         texX := i32(interpU * f32(texture.width )) & (texture.width  - 1)
         texY := i32(interpV * f32(texture.height)) & (texture.height - 1)

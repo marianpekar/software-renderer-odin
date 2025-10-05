@@ -25,7 +25,10 @@ main :: proc() {
 
     texture := LoadTextureFromFile("assets/uv_checker.png")
     camera := MakeCamera({0.0, 0.0, -3.0})
-    light := MakeLight({0.0, 0.0, -3.0}, {0.0, 1.0, 0.0}, 1.0)
+
+    light  := MakeLight({-4.0,  0.0, -3.0}, { 1.0,  1.0, 0.0}, 1.0)
+    light2 := MakeLight({ 4.0,  0.0, -3.0}, {-1.0, -1.0, 0.0}, 1.0)
+    lights := []Light{light, light2}
 
     rotation := Vector3{0.0, 180.0, 0.0}
     translation := Vector3{0.0, 0.0, 0.0}
@@ -72,11 +75,11 @@ main :: proc() {
         ClearZBuffer(zBuffer)
 
         switch renderMode {
-            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, light, texture, zBuffer, &renderImage, projMatrix, projType)
-            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, light, texture, zBuffer, &renderImage, projMatrix, projType)
+            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, lights, texture, zBuffer, &renderImage, projMatrix, projType)
+            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, lights, texture, zBuffer, &renderImage, projMatrix, projType)
             case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer, &renderImage, projMatrix, projType)
-            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, light, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
-            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, light, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
+            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, lights, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
+            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, lights, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
             case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
             case 1: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, projType, drawCoordsInWireframe)
             case 0: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, projType, drawCoordsInWireframe, false)
