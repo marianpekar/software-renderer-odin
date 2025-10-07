@@ -19,11 +19,18 @@ main :: proc() {
     zBuffer := MakeZBuffer()
     defer DeleteZBuffer(zBuffer)
 
-    //mesh := MakeCube()
-    mesh := LoadMeshFromObjFile("assets/monkey.obj")
-    defer DeleteMesh(&mesh)
+    cube := LoadModel("assets/cube.obj", "assets/box.png")
+    monkey := LoadModel("assets/monkey.obj", "assets/uv_checker.png")
 
-    texture := LoadTextureFromFile("assets/uv_checker.png")
+    monkey.wireColor = rl.RED
+    
+    models := []Model{cube, monkey}
+    defer {
+        for &model in models {
+            DeleteModel(&model)
+        }
+    }
+
     camera := MakeCamera({0.0, 0.0, -3.0})
 
     light  := MakeLight({-4.0,  0.0, -3.0}, { 1.0,  1.0, 0.0}, {1.0, 0.0, 0.0, 1.0})
@@ -33,10 +40,6 @@ main :: proc() {
     ambient := Vector3{0.2, 0.2, 0.2}
     ambient2 := Vector3{0.1, 0.1, 0.2}
 
-    rotation := Vector3{0.0, 180.0, 0.0}
-    translation := Vector3{0.0, 0.0, 0.0}
-    scale: f32 = 1.0
-
     renderModesCount :: 8
     renderMode: i8 = renderModesCount - 1
     drawCoordsInWireframe := false
@@ -45,47 +48,44 @@ main :: proc() {
     perspMatrix := MakePerspectiveMatrix(FOV, SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
     orthoMatrix := MakeOrthographicMatrix(SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE)
 
+    selectedModelIdx := 0
+    modelCount := len(models)
+    selectedModel := &models[selectedModelIdx]
+
+    for &model in models {
+        ApplyTransformations(&model, camera)
+    }
+
     for !rl.WindowShouldClose() {
         deltaTime := rl.GetFrameTime()
-        HandleInputs(&translation, &rotation, &scale, &renderMode, &drawCoordsInWireframe, &projType, renderModesCount, deltaTime)
 
+        selectedModel := &models[selectedModelIdx]
+
+        HandleInputs(selectedModel, &renderMode, &drawCoordsInWireframe, &projType, renderModesCount, &selectedModelIdx, modelCount, deltaTime)
+
+        ApplyTransformations(selectedModel, camera)
+        
         projMatrix: Matrix4x4
         switch projType {
             case .Perspective: projMatrix = perspMatrix
             case .Orthographic: projMatrix = orthoMatrix
         }
 
-        // Translation
-        translationMatrix := MakeTranslationMatrix(translation.x, translation.y, translation.z)
-
-        // Rotation
-        rotationMatrix := MakeRotationMatrix(rotation.x, rotation.y, rotation.z)
-
-        // Scale
-        scaleMatrix := MakeScaleMatrix(scale, scale, scale)
-
-        // Apply Transformations
-        modelMatrix := Mat4Mul(translationMatrix, Mat4Mul(rotationMatrix, scaleMatrix))
-
-        viewMatrix  := MakeViewMatrix(camera.position, camera.target)
-        viewMatrix  = Mat4Mul(viewMatrix, modelMatrix)
-        
-        ApplyTransformations(&mesh.transformedVertices, mesh.vertices, viewMatrix)
-        ApplyTransformations(&mesh.transformedNormals, mesh.normals, viewMatrix)
-
         rl.BeginDrawing()
 
         ClearZBuffer(zBuffer)
-
-        switch renderMode {
-            case 7: DrawTexturedPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, mesh.transformedNormals, lights, texture, zBuffer, &renderImage, projMatrix, projType, ambient2)
-            case 6: DrawTexturedFlatShaded(mesh.transformedVertices, mesh.triangles, mesh.uvs, lights, texture, zBuffer, &renderImage, projMatrix, projType, ambient)
-            case 5: DrawTexturedUnlit(mesh.transformedVertices, mesh.triangles, mesh.uvs, texture, zBuffer, &renderImage, projMatrix, projType)
-            case 4: DrawPhongShaded(mesh.transformedVertices, mesh.triangles, mesh.transformedNormals, lights, rl.WHITE, zBuffer, &renderImage, projMatrix, projType, ambient2)
-            case 3: DrawFlatShaded(mesh.transformedVertices, mesh.triangles, lights, rl.WHITE, zBuffer, &renderImage, projMatrix, projType, ambient)
-            case 2: DrawUnlit(mesh.transformedVertices, mesh.triangles, rl.WHITE, zBuffer, &renderImage, projMatrix, projType)
-            case 1: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, projType, drawCoordsInWireframe)
-            case 0: DrawWireframe(mesh.transformedVertices, mesh.vertices, mesh.triangles, rl.RED, &renderImage, projMatrix, projType, drawCoordsInWireframe, false)
+        
+        for &model in models {
+            switch renderMode {
+                case 7: DrawTexturedPhongShaded(model.mesh.transformedVertices, model.mesh.triangles, model.mesh.uvs, model.mesh.transformedNormals, lights, model.texture, zBuffer, &renderImage, projMatrix, projType, ambient2)
+                case 6: DrawTexturedFlatShaded(model.mesh.transformedVertices, model.mesh.triangles, model.mesh.uvs, lights, model.texture, zBuffer, &renderImage, projMatrix, projType, ambient)
+                case 5: DrawTexturedUnlit(model.mesh.transformedVertices, model.mesh.triangles, model.mesh.uvs, model.texture, zBuffer, &renderImage, projMatrix, projType)
+                case 4: DrawPhongShaded(model.mesh.transformedVertices, model.mesh.triangles, model.mesh.transformedNormals, lights, model.color, zBuffer, &renderImage, projMatrix, projType, ambient2)
+                case 3: DrawFlatShaded(model.mesh.transformedVertices, model.mesh.triangles, lights, model.color, zBuffer, &renderImage, projMatrix, projType, ambient)
+                case 2: DrawUnlit(model.mesh.transformedVertices, model.mesh.triangles, model.color, zBuffer, &renderImage, projMatrix, projType)
+                case 1: DrawWireframe(model.mesh.transformedVertices, model.mesh.vertices, model.mesh.triangles, model.wireColor, &renderImage, projMatrix, projType, drawCoordsInWireframe)
+                case 0: DrawWireframe(model.mesh.transformedVertices, model.mesh.vertices, model.mesh.triangles, model.wireColor, &renderImage, projMatrix, projType, drawCoordsInWireframe, false)
+            }
         }
 
         rl.UpdateTexture(renderTexture, renderImage.data)
@@ -98,10 +98,4 @@ main :: proc() {
     }
 
     rl.CloseWindow()
-}
-
-ApplyTransformations :: proc(transformed: ^[]Vector3, original: []Vector3, mat: Matrix4x4) {
-    for i in 0..<len(original) {
-        transformed[i] = Mat4MulVec3(mat, original[i])
-    }
 }
