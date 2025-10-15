@@ -10,12 +10,11 @@ Texture :: struct {
 
 LoadTextureFromFile :: proc(filename: cstring) -> Texture {
     image := rl.LoadImage(filename)
-    pixels := rl.LoadImageColors(image)
 
     texture := Texture{
         width = image.width,
         height = image.height,
-        pixels = pixels
+        pixels = rl.LoadImageColors(image)
     }
 
     rl.UnloadImage(image)
