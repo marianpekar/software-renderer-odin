@@ -116,18 +116,18 @@ MakeCube :: proc() -> Mesh {
     vertices[7] = Vector3{-1.0, -1.0,  1.0}
 
     normals := make([]Vector3, 6)
-    normals[0] = {-0.0, -0.0, -1.0}
-    normals[1] = { 1.0, -0.0, -0.0}
-    normals[2] = {-0.0, -0.0,  1.0}
-    normals[3] = {-1.0, -0.0, -0.0}
-    normals[4] = {-0.0,  1.0, -0.0}
-    normals[5] = {-0.0, -1.0, -0.0}
+    normals[0] = { 0.0,  0.0, -1.0}
+    normals[1] = { 1.0,  0.0,  0.0}
+    normals[2] = { 0.0,  0.0,  1.0}
+    normals[3] = {-1.0,  0.0,  0.0}
+    normals[4] = { 0.0,  1.0,  0.0}
+    normals[5] = { 0.0, -1.0,  0.0}
 
     uvs := make([]Vector2, 4)
-    uvs[0] =  Vector2{0.0, 0.0}
-    uvs[1] =  Vector2{0.0, 1.0}
-    uvs[2] =  Vector2{1.0, 1.0}
-    uvs[3] =  Vector2{1.0, 0.0}
+    uvs[0] =  Vector2{1.0, 1.0}
+    uvs[1] =  Vector2{1.0, 0.0}
+    uvs[2] =  Vector2{0.0, 0.0}
+    uvs[3] =  Vector2{0.0, 1.0}
 
     triangles := make([]Triangle, 12)
     // Front                 vert.     uvs       norm.
