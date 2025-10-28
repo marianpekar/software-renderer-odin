@@ -35,38 +35,33 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
         }
         
         split := strings.split(line, " ")
-        if split[0] == "v" {
-            x := ParseCoord(split[:], 1)
-            y := ParseCoord(split[:], 2)
-            z := ParseCoord(split[:], 3)
-            append(&vertices, Vector3{x, y, z})
-        } 
-        else if split[0] == "vt" {
-            u := ParseCoord(split[:], 1)
-            v := ParseCoord(split[:], 2)
-            append(&uvs, Vector2{u, v})
-        } 
-        else if split[0] == "vn" {
-            nx := ParseCoord(split[:], 1)
-            ny := ParseCoord(split[:], 2)
-            nz := ParseCoord(split[:], 3)
-            append(&normals, Vector3{nx, ny, nz})
-        }
-        else if split[0] == "f" {
-            // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
-            v1, vt1, vn1 := ParseIndices(split[:], 1)
-            v2, vt2, vn2 := ParseIndices(split[:], 2)
-            v3, vt3, vn3 := ParseIndices(split[:], 3)
-            append(&triangles, Triangle{v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3})
+        switch split[0] {
+            case "v":
+                x := ParseCoord(split, 1)
+                y := ParseCoord(split, 2)
+                z := ParseCoord(split, 3)
+                append(&vertices, Vector3{x, y, z})
+            case "vn":
+                nx := ParseCoord(split, 1)
+                ny := ParseCoord(split, 2)
+                nz := ParseCoord(split, 3)
+                append(&normals, Vector3{nx, ny, nz})
+            case "vt":
+                u := ParseCoord(split, 1)
+                v := ParseCoord(split, 2)
+                append(&uvs, Vector2{u, v})
+            case "f":
+                // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+                v1, vt1, vn1 := ParseIndices(split, 1)
+                v2, vt2, vn2 := ParseIndices(split, 2)
+                v3, vt3, vn3 := ParseIndices(split, 3)
+                append(&triangles, Triangle{v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3})
         }
     }
 
-    transformedVertices := make([]Vector3, len(vertices))
-    trasformedNormals := make([]Vector3, len(normals))
-
     return Mesh {
-        transformedVertices = transformedVertices[:],
-        transformedNormals = trasformedNormals[:],
+        transformedVertices = make([]Vector3, len(vertices)),
+        transformedNormals = make([]Vector3, len(normals)),
         vertices = vertices[:],
         normals = normals[:],
         uvs = uvs[:],
