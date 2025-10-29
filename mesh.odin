@@ -59,6 +59,10 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
         }
     }
 
+    if len(uvs) <= 0 {
+        append(&uvs, Vector2{0.0, 0.0})
+    }
+
     return Mesh {
         transformedVertices = make([]Vector3, len(vertices)),
         transformedNormals = make([]Vector3, len(normals)),
@@ -87,7 +91,7 @@ LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
         
         vt, okvt := strconv.parse_int(indices[1])
         if !okvt {
-            log.panic("Failed to parse index of a UV")
+            vt = 1
         }
 
         vn, okvn := strconv.parse_int(indices[2])
