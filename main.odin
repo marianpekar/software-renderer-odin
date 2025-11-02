@@ -22,6 +22,10 @@ main :: proc() {
     cube := LoadModel("assets/cube.obj", "assets/box.png")
     monkey := LoadModel("assets/monkey.obj", "assets/uv_checker.png")
 
+    cube.translation = {-1.25, 0.0, 0.5}
+    monkey.translation = {1.5, 0.0, 0.5}
+    monkey.rotation = {180, 0.0, 0.0}
+
     monkey.wireColor = rl.RED
     
     models := []Model{cube, monkey}
