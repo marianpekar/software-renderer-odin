@@ -17,11 +17,10 @@ Mesh :: struct {
 }
 
 LoadMeshFromObjFile :: proc(filepath: string) -> Mesh {
-    data, ok := os.read_entire_file(filepath)
-    if !ok {
-        log.panic("Failed to read file %v", filepath)
+    data, err := os.read_entire_file(filepath, context.allocator)
+    if err != nil {
+        log.panicf("Failed to read file %s", filepath)
     }
-    defer delete(data)
 
     vertices: [dynamic]Vector3
     normals: [dynamic]Vector3
