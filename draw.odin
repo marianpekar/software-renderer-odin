@@ -58,11 +58,11 @@ DrawCoords :: proc(v: Vector3, vm: Vector3, p: Vector2, image: ^rl.Image) {
     // Model Space
     str := strings.concatenate({
         "[",
-        strings.clone(strconv.ftoa(buf[:], f64(vm.x), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(vm.x), 'f', precision, bitSize)),
         ",",
-        strings.clone(strconv.ftoa(buf[:], f64(vm.y), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(vm.y), 'f', precision, bitSize)),
         ",",
-        strings.clone(strconv.ftoa(buf[:], f64(vm.z), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(vm.z), 'f', precision, bitSize)),
         "]"
     })
     rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y), 10, rl.BLUE)
@@ -70,11 +70,11 @@ DrawCoords :: proc(v: Vector3, vm: Vector3, p: Vector2, image: ^rl.Image) {
     // World Space
     str = strings.concatenate({
         "[",
-        strings.clone(strconv.ftoa(buf[:], f64(v.x), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(v.x), 'f', precision, bitSize)),
         ",",
-        strings.clone(strconv.ftoa(buf[:], f64(v.y), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(v.y), 'f', precision, bitSize)),
         ",",
-        strings.clone(strconv.ftoa(buf[:], f64(v.z), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(v.z), 'f', precision, bitSize)),
         "]"
     })
     rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y + 10), 10, rl.YELLOW)
@@ -83,9 +83,9 @@ DrawCoords :: proc(v: Vector3, vm: Vector3, p: Vector2, image: ^rl.Image) {
     precision = 0
     str = strings.concatenate({
         "[",
-        strings.clone(strconv.ftoa(buf[:], f64(p.x), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(p.x), 'f', precision, bitSize)),
         ",",
-        strings.clone(strconv.ftoa(buf[:], f64(p.y), 'f', precision, bitSize)),
+        strings.clone(strconv.write_float(buf[:], f64(p.y), 'f', precision, bitSize)),
         "]"
     })
     rl.ImageDrawText(image, strings.clone_to_cstring(str), i32(p.x), i32(p.y + 20), 10, rl.GREEN)
