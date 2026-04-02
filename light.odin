@@ -6,9 +6,9 @@ Light :: struct {
     color: Vector4,
 }
 
-MakeLight :: proc(position, direction: Vector3, color: Vector4) -> Light {
+MakeLight :: proc(position, direction: Vector3, color: Vector4, viewMatrix: Matrix4x4) -> Light {
     return { 
-        position, 
+        Mat4MulVec3(viewMatrix, position), 
         Vector3Normalize(direction), 
         color
     }
